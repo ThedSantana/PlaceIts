@@ -14,5 +14,15 @@
     <string name="action_check_updates">Updates</string>
     <string name="action_location_found">Location Found!</string>
     <string name="action_add_note">Add Notes</string>
+    <string name="cancel">Cancel</string>
+    <string name="Sunday">Sunday</string>
+    <string name="Monday">Monday</string>
+    <string name="Tuesday">Tuesday</string>
+    <string name="Wednesday">Wednesday</string>
+    <string name="Thursday">Thursday</string>
+    <string name="Friday">Friday</string>
+    <string name="Saturday">Saturday</string>
+    <string name="title_activity_day_chooser">DayChooser</string>
+    <string name="confirm">Confirm</string>
 
 </resources>
