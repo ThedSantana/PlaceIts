@@ -257,9 +257,9 @@ containing a value of this type.
         public static final int bar8=0x7f05001c;
         public static final int chooseDaysCancel=0x7f05001b;
         public static final int chooseDaysConfirm=0x7f05001d;
-        public static final int container=0x7f050005;
         public static final int hybrid=0x7f050004;
         public static final int map=0x7f05001f;
+        public static final int map1=0x7f050005;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int satellite=0x7f050002;
@@ -395,6 +395,7 @@ containing a value of this type.
         public static final int confirm=0x7f060030;
         public static final int hello_world=0x7f060020;
         public static final int title_activity_day_chooser=0x7f06002f;
+        public static final int title_activity_settings_layout=0x7f060031;
         public static final int title_activity_test=0x7f06001f;
         public static final int title_section1=0x7f06001c;
         public static final int title_section2=0x7f06001d;
