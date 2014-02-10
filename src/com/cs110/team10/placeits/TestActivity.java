@@ -14,6 +14,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -38,7 +40,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class TestActivity extends Activity implements OnMapClickListener, OnMarkerClickListener, CancelableCallback{
+public class TestActivity extends Activity implements OnMapClickListener, OnMarkerClickListener, CancelableCallback, LocationListener{
 	private static GoogleMap googleMap;
 	private static boolean addMarker = false;
 	private final static double radiusSize = 804;      // Radius of notification marker in meters
@@ -80,6 +82,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	    googleMap.setMyLocationEnabled(true);	
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
         
         circleMap = new HashMap<Marker, Circle>();
         
@@ -273,7 +276,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 				
 				// Remove the marker's proximity alert
 				Intent intent = new Intent(TestActivity.this, GeoAlert.class);
-				pendingIntent = PendingIntent.getActivity(TestActivity.this, 0, intent,Intent.FLAG_ACTIVITY_NEW_TASK);
+				pendingIntent = PendingIntent.getBroadcast(TestActivity.this, 0, intent,Intent.FLAG_ACTIVITY_NEW_TASK);
 				locationManager.removeProximityAlert(pendingIntent);
 				
 				// Clear the circle
@@ -327,7 +330,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 enteredRegionIntent.putExtra("message", tempValue);
 
                 // Location manager checks this pendingIntent when user enters region. Goes to GeoAlert class if entered. 
-                pendingIntent = PendingIntent.getActivity(TestActivity.this, 0, enteredRegionIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+                pendingIntent = PendingIntent.getBroadcast(TestActivity.this, 0, enteredRegionIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
 
                 // Adding a proximity alert on the marker based on radiusSize. Expiration is -1, so it will never expire. 
                 locationManager.addProximityAlert(tempPos.latitude, tempPos.longitude, (long)radiusSize, -1, pendingIntent);
@@ -430,6 +433,37 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     public static void storeMap(HashMap<String, Boolean> map){
     	daysPicked = map;
     }
+
+    
+    // These below methods are for LocationListener
+	@Override
+	public void onLocationChanged(Location location) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+    // These above methods are for LocationListener
+
 
 
 

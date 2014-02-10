@@ -58,13 +58,10 @@
             android:theme="@android:style/Theme.Holo.Light.Dialog" >
         </activity>
         
-        <activity
-            android:name=".GeoAlert"
+        <receiver
+            android:name="com.cs110.team10.placeits.GeoAlert"
             android:label="@string/app_name" >
-            <intent-filter >
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+        </receiver>
          
 
     </application>
