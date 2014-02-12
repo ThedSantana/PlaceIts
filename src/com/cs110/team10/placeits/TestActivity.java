@@ -28,12 +28,14 @@ import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -69,6 +71,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
 		
+		
 		 
 		
 		// Loading map
@@ -77,6 +80,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         } catch (Exception e) {
             e.printStackTrace();
         }
+		
+
 		
 		// Enable my location button
 	    googleMap.setMyLocationEnabled(true);	
@@ -147,6 +152,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         	}
         	
         }
+        
+        // Moves camera from NotificationHandler LatLng, if user clicks on "Complete"
+		if(getIntent().getBooleanExtra("moveCamera", false)){	    	
+			moveCamera(getIntent().getDoubleExtra("latitude", 0), getIntent().getDoubleExtra("longitude", 0), 4000);
+		}
 	    
 	    // Set on click listener for "Add Note"
 	    googleMap.setOnMapClickListener(this);
@@ -250,7 +260,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		alert.setMessage(database.getMarkerList().get(marker));
         final SharedPreferences.Editor editor = sharedPreferences.edit();
 		// Set an EditText view to get user input
-		alert.setPositiveButton("Remove Note", new DialogInterface.OnClickListener() {
+		alert.setPositiveButton("Complete task", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				database.getMarkerList().remove(marker);      // Removes marker from markerList
 				database.removeDaysPicked(marker); // Removes daysPicked for that marker
@@ -284,7 +294,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 				circleMap.remove(marker);
 				
 				
-				Toast.makeText(TestActivity.this, "Note removed!", Toast.LENGTH_SHORT).show();
+				Toast.makeText(TestActivity.this, "Note completed!", Toast.LENGTH_SHORT).show();
 				editor.commit();
 				
 			}
@@ -316,6 +326,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	}
 	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d("TestActivity", "onActivityResult");
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
         		added = googleMap.addMarker(new MarkerOptions().position(tempPos).title(tempValue));
@@ -328,6 +339,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 
                 // Adding message for the notification system
                 enteredRegionIntent.putExtra("message", tempValue);
+                enteredRegionIntent.putExtra("latitude", tempPos.latitude);
+                enteredRegionIntent.putExtra("longitude", tempPos.longitude);
 
                 // Location manager checks this pendingIntent when user enters region. Goes to GeoAlert class if entered. 
                 pendingIntent = PendingIntent.getBroadcast(TestActivity.this, 0, enteredRegionIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -354,7 +367,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 
                 editor.commit();
             }
-        }
+        } 
+       
     }
 
 	 
@@ -432,6 +446,20 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     
     public static void storeMap(HashMap<String, Boolean> map){
     	daysPicked = map;
+    }
+    
+    /*
+     * Moves camera to location. Used when user clicks on 'complete' in notification bar
+     */
+    public static void moveCamera(double latitude, double longitude, int time){
+		CameraPosition cameraPosition = new CameraPosition.Builder()
+				.target(new LatLng(latitude, longitude))
+				.zoom(15) 
+				.bearing(90) // Sets the orientation of the camera to east
+				.tilt(30) // Sets the tilt of the camera to 30 degrees		
+				.build(); // Creates a CameraPosition from the builder
+			
+		googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), time, null);
     }
 
     

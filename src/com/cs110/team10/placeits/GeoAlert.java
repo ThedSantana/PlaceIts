@@ -22,7 +22,21 @@ public class GeoAlert extends BroadcastReceiver {
 	 
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	 
+	    	double d = intent.getDoubleExtra("latitude", 0);
+	    	
+	    	Intent completeIntent = new Intent(context, NotificationHandler.class);
+	    	completeIntent.putExtra("completed", true);
+	    	completeIntent.putExtra("latitude", intent.getDoubleExtra("latitude", 0));
+	    	completeIntent.putExtra("longitude", intent.getDoubleExtra("longitude", 0));
+
+	    	
+	    	PendingIntent complete = PendingIntent.getActivity(context, 20, completeIntent, 0);
+	    	
+	    	Intent dismissIntent = new Intent(context, NotificationHandler.class);
+	    	PendingIntent dismiss = PendingIntent.getActivity(context, 40, dismissIntent , 0);
+
+	    	
+	    	
 	        // Check if user has entered Marker
 	        enteredMarker = intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, true);
 	 
@@ -36,14 +50,25 @@ public class GeoAlert extends BroadcastReceiver {
 		        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		 
 		        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
+        				.setPriority(Notification.PRIORITY_HIGH)
 	            		.setContentTitle(notificationTitle)
 		                .setContentText(notificationContent)
 		                .setTicker(tickerMessage)
-		        		.setSmallIcon(R.drawable.ic_launcher);
-	
-		 
+		        		.setSmallIcon(R.drawable.ic_launcher)
+		        		.setAutoCancel(true)
+		        		.addAction(R.drawable.ic_action_accept, "Complete task", complete)
+        				.addAction(R.drawable.ic_action_cancel, "Dismiss", dismiss);
+
+		        // This is used to dismiss the notification upon click
+		        PendingIntent notifyIntent = PendingIntent.getActivity(context, 30, new Intent(), 0);     
+		        notificationBuilder.setContentIntent(notifyIntent);
+		        
+		        // Builds notification
+		        Notification notification = notificationBuilder.build();
 		        // Sends a notification. Uses system time to create a new ID for the notification
-		        notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
+		        notificationManager.notify(0, notification);
 	        }
 	    }
+	    
+
 	}
