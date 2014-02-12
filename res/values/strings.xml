@@ -24,5 +24,6 @@
     <string name="Saturday">Saturday</string>
     <string name="title_activity_day_chooser">DayChooser</string>
     <string name="confirm">Confirm</string>
+    <string name="title_activity_settings_layout">MainActivity</string>
 
 </resources>

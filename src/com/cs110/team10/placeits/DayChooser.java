@@ -6,7 +6,6 @@ package com.cs110.team10.placeits;
 import java.util.HashMap;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,8 +14,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.Marker;
+
 public class DayChooser extends Activity {
-	HashMap<String, Boolean> daysPicked;
+	private HashMap<String, Boolean> daysPicked;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +47,7 @@ public class DayChooser extends Activity {
 			public void onClick(View v) {
 				Log.d("ConfirmationActivity", "Confirm Picked");
 		    	Toast.makeText(DayChooser.this, "Notes added!", Toast.LENGTH_SHORT).show();
-		    	Database database = new Database();
-		    	database.addDaysPicked(daysPicked);
+		    	TestActivity.storeMap(daysPicked);
 		    	setResult(RESULT_OK);
 	            finish();
 				
@@ -128,6 +128,8 @@ public class DayChooser extends Activity {
 	            
 	    }
 	}
+	
+
 	
 
 }
