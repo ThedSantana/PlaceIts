@@ -25,5 +25,7 @@
     <string name="title_activity_day_chooser">DayChooser</string>
     <string name="confirm">Confirm</string>
     <string name="title_activity_settings_layout">MainActivity</string>
+    <string name="oneMin">One Minute</string>
+    <string name="weekly">Weekly</string>
 
 </resources>

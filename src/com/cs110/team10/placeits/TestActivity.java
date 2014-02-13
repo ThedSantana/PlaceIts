@@ -1,17 +1,21 @@
 package com.cs110.team10.placeits;
 
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
@@ -28,7 +32,6 @@ import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
@@ -47,47 +50,53 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private static boolean addMarker = false;
 	private final static double radiusSize = 804;      // Radius of notification marker in meters
 	
-	private static HashMap<String, Boolean> daysPicked;
 
 	private Marker added; // Temp Marker used for onActivityResult()
 	private LatLng tempPos; // Temp position used for onActivityResult()
 	private String tempValue; // Temp string used for onActvityResult()
 
-	private LocationManager locationManager;
-	private PendingIntent pendingIntent; // Used for display notifications
+	private  static LocationManager locationManager;
+	private static LocationManager alarmLocationManager;
+	private  static PendingIntent pendingIntent; // Used for display notifications
 	private SharedPreferences sharedPreferences; // Used for saving markers, and reminders
 	
 	
 	// Used for storing Data
-	Database database;
+	private static Database database;
 	private int ID = 0;           // Used to give each marker an ID for storing them in data
 	
-	private HashMap<Marker, Circle> circleMap;
+	private static HashMap<Marker, Circle> circleMap;
+	private HashMap<Marker, String> timeMode;
+	private static String tempTime;    // Temporary time used for onActivityResult()
+	private AlarmManager alarm;
+	private PendingIntent alarmIntent; 
+	
+	static Context thisContext;
 
-		
 	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
 		
-		
-		 
+		thisContext = getApplicationContext();
+		alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		
 		// Loading map
 		try {
             initializeMap();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d("TestActivity", e.getMessage());
         }
 		
 
-		
+
 		// Enable my location button
 	    googleMap.setMyLocationEnabled(true);	
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
+        
         
         circleMap = new HashMap<Marker, Circle>();
         
@@ -135,8 +144,15 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         	String latitude =  sharedPreferences.getString("markerLat_m" + i, "0");
         	String message = sharedPreferences.getString("markerMessage_m" + i, "0");
         	
-        	// Check if marker exists
-        	if(!message.equals("0")){
+        	 // Get Alarm for marker if it exists
+            if(sharedPreferences.contains("markerAlarm_m" + i)){
+            	Log.d("TestActivity", "SharedPreferences adding an alarm");
+            	Marker mark = addAMarker(new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude)), 
+            		message, thisContext);
+            	database.addTime(mark, sharedPreferences.getString("markerAlarm_m" + i, "0"));
+            	
+
+            } else if(!message.equals("0")){     // Check if marker exists
 
                 // Drawing marker on the map
                 Marker mark = googleMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(latitude), 
@@ -147,7 +163,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 
                 
                 database.addMarker(mark, message);
-                database.addDaysPicked(mark, null);
+                
+               
         		
         	}
         	
@@ -158,6 +175,15 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 			moveCamera(getIntent().getDoubleExtra("latitude", 0), getIntent().getDoubleExtra("longitude", 0), 4000);
 		}
 	    
+		// Checks if device has been rebooted and needs to start alarm again
+		if(getIntent().getBooleanExtra("minute", false)){
+			Toast.makeText(TestActivity.this, "FUCKING MINUTE", Toast.LENGTH_SHORT).show();
+			//setMinuteAlarm(TestActivity.this, marker, s, ID)
+		}else if(getIntent().getBooleanExtra("weekly", false)){
+			Toast.makeText(TestActivity.this, "FUCKING Week", Toast.LENGTH_SHORT).show();
+			//setWeeklyAlarm(TestActivity.this, marker, s, ID)
+		}
+		
 	    // Set on click listener for "Add Note"
 	    googleMap.setOnMapClickListener(this);
 	    googleMap.setOnMarkerClickListener((OnMarkerClickListener) this);
@@ -240,7 +266,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 				if(value.isEmpty()){
 					Toast.makeText(TestActivity.this, "Please add some text", Toast.LENGTH_SHORT).show();
 				}else{
-					Intent intent = new Intent(TestActivity.this, DayChooser.class);
+					Intent intent = new Intent(TestActivity.this, TimeChooser.class);
 					startActivityForResult(intent, 1);
 					
 					alertDialog.dismiss();
@@ -263,10 +289,15 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		alert.setPositiveButton("Complete task", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				database.getMarkerList().remove(marker);      // Removes marker from markerList
-				database.removeDaysPicked(marker); // Removes daysPicked for that marker
+				database.removeDaysPicked(marker);           // Removes daysPicked for that marker
                 editor.remove("markerLong_" + marker.getId());
                 editor.remove("markerLat_" + marker.getId());
                 editor.remove("markerMessage_" + marker.getId());
+                
+                // Remove Alarm if set
+                if(sharedPreferences.contains("markerAlarm_" + marker.getId()));
+                	editor.remove("markerAlarm_" + marker.getId());
+                	
                 String s = sharedPreferences.getString("ID", "noID");
                 s = s.substring(1);
                 Log.d("TestActivity", "Before is " + s);
@@ -284,6 +315,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 // Removes marker from map
 				marker.remove();
 				
+				
+				
 				// Remove the marker's proximity alert
 				Intent intent = new Intent(TestActivity.this, GeoAlert.class);
 				pendingIntent = PendingIntent.getBroadcast(TestActivity.this, 0, intent,Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -292,11 +325,31 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 				// Clear the circle
 				circleMap.get(marker).remove();
 				circleMap.remove(marker);
-				
+
 				
 				Toast.makeText(TestActivity.this, "Note completed!", Toast.LENGTH_SHORT).show();
 				editor.commit();
 				
+			}
+		});
+		
+		alert.setNeutralButton("Remove Alarm", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Log.d("TestActivity", "Alarm Cancelled!");
+				if(database.timePicked.remove(marker) == null){
+					Toast.makeText(TestActivity.this, "No alarm set!", Toast.LENGTH_SHORT).show();
+				}else{
+					Toast.makeText(TestActivity.this, "Alarm cancelled!", Toast.LENGTH_SHORT).show();
+
+				}
+				alarm.cancel(alarmIntent);
+				SharedPreferences.Editor editor = sharedPreferences.edit();
+				if(sharedPreferences.contains("markerAlarm_" + marker.getId())){
+					Log.d("TestActivity", "Alarm preference cancelled");
+					editor.remove("markerAlarm_" + marker.getId());
+				}
+				editor.commit();
 			}
 		});
 		
@@ -332,7 +385,6 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         		added = googleMap.addMarker(new MarkerOptions().position(tempPos).title(tempValue));
         		circleMap.put(added, drawCircle(tempPos));            // For debug purposes
 				database.addMarker(added, tempValue);           // Adds marker to database
-				database.addDaysPicked(added, daysPicked);      // Stores marker and daysPicked data
 				
 				
                 Intent enteredRegionIntent = new Intent(TestActivity.this, GeoAlert.class);
@@ -347,8 +399,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 
                 // Adding a proximity alert on the marker based on radiusSize. Expiration is -1, so it will never expire. 
                 locationManager.addProximityAlert(tempPos.latitude, tempPos.longitude, (long)radiusSize, -1, pendingIntent);
-                
-                
+             
                 // Save the data of the position of marker, the string message, and position of the camera
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 
@@ -363,6 +414,25 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 editor.putString("markerLat_" + added.getId(), String.valueOf(tempPos.latitude));
                 editor.putString("markerLong_" + added.getId(), String.valueOf(tempPos.longitude));
                 Log.d("TestActivity", "adding markerMessage_" + added.getId());
+                
+                
+                Log.d("testActivity", tempTime);
+                // Setting Alarm notifications
+                if(tempTime != null && tempTime.equals("weekly")){  // Weekly reminder
+                	setWeeklyAlarm(TestActivity.this, added, tempValue, added.getId());
+                	
+                	
+                	database.addTime(added, "weekly" );
+                    editor.putString("markerAlarm_" + added.getId(), "weekly");
+                    
+                }else if(tempTime != null && tempTime.equals("minute")){ // Reminder every minute
+                	setMinuteAlarm(TestActivity.this, added, tempValue, added.getId());
+                	Log.d("TestActivity", "Saving markerAlarm_" + added.getId());
+                	
+                	database.addTime(added, "minute");
+                    editor.putString("markerAlarm_" + added.getId(), "minute");
+
+                }
 
                 
                 editor.commit();
@@ -371,28 +441,129 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
        
     }
 
-	 
+	public void setWeeklyAlarm(Context context, Marker marker, String s, String ID){
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(System.currentTimeMillis());
+
+
+		Intent downloader = new Intent(context, TimeAlarm.class);
+		downloader.putExtra("message", s);
+		downloader.putExtra("longitude", marker.getPosition().longitude);
+		downloader.putExtra("latitude", marker.getPosition().latitude);
+		downloader.putExtra("id", ID);
+
+		 alarmIntent = PendingIntent.getBroadcast(context, 7, downloader,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+
+		alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+				calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7,
+				alarmIntent);
+		
+	}
+
+	public void setMinuteAlarm(Context context, Marker marker, String s, String ID) {
+		Intent downloader = new Intent(context, TimeAlarm.class);
+		downloader.putExtra("message", s);
+		downloader.putExtra("longitude", marker.getPosition().longitude);
+		downloader.putExtra("latitude", marker.getPosition().latitude);
+		downloader.putExtra("id", ID);
+
+		
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(System.currentTimeMillis());
+
+
+		 alarmIntent = PendingIntent.getBroadcast(context, 1, downloader,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+		alarm.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				AlarmManager.INTERVAL_FIFTEEN_MINUTES / 15,
+				AlarmManager.INTERVAL_FIFTEEN_MINUTES / 15, alarmIntent);
+		     
+	}
+	    
+	    public void cancelAlarm(Context context) {
+	        // If the alarm has been set, cancel it.
+	        if (alarm != null) {
+	            alarm.cancel(alarmIntent);
+	        }else{
+	        	Toast.makeText(TestActivity.this, "Alarm has not been set!", Toast.LENGTH_SHORT).show();
+	        }
+	    }
+	    
 	 private static void addAllMarkers(Map<Marker, String> map) {
 		 for (Entry<Marker, String> entry : map.entrySet()) {
 			    Marker key = entry.getKey();
 			    String value = entry.getValue();
 			    googleMap.addMarker(new MarkerOptions().position(key.getPosition()).title(value));
 			}
-		}
+	}
 	 
-	/**
-	 * function to load map. If map is not created it will create it for you
-	 * */
+	 public static Marker addAMarker(LatLng position, String message, Context context){
+
+		    Marker m = googleMap.addMarker(new MarkerOptions().position(position).title(message));
+		    Log.d("addAMarker", "Adding marker " + m.getId());
+		    database.markers.put(m, message);
+		    database.timePicked.put(m, "minute");
+		    circleMap.put(m, drawCircle(position));
+		    
+		    Intent enteredRegionIntent = new Intent(context, GeoAlert.class);
+            
+            // Adding message for the notification system
+            enteredRegionIntent.putExtra("message", message);
+            enteredRegionIntent.putExtra("latitude", position.latitude);
+            enteredRegionIntent.putExtra("longitude", position.longitude);
+
+            // Location manager checks this pendingIntent when user enters region. Goes to GeoAlert class if entered. 
+            pendingIntent = PendingIntent.getBroadcast(context, 0, enteredRegionIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            // Adding a proximity alert on the marker based on radiusSize. Expiration is -1, so it will never expire. 
+            locationManager.addProximityAlert(position.latitude, position.longitude, (long)radiusSize, -1, pendingIntent);
+            
+            return m;
+         
+	 }
+	 
+	 public static boolean deleteMarker(LatLng position, String message){
+		 Log.d("TestActivity", "In Deleting Markers");
+		 
+		 if(database == null){
+			 return false;
+		 }
+		 
+		 for(Entry<Marker, String> entry : database.markers.entrySet()){
+			 Marker marker = entry.getKey();
+			 
+			 if(marker.getPosition().latitude == position.latitude
+					 && marker.getPosition().longitude == position.longitude){
+				 Log.d("TestAcivity", "Deleting Marker");
+				 return false;
+			 }
+			 
+		 }
+		 if(database.markers.isEmpty()){
+			 Log.d("TestActivity", "fuuuck");
+			 addAMarker(position, message,  TestActivity.thisContext);
+			 
+		 }
+		 
+		 return false;
+	 }
+	 
+	 
+
+	 
+	 /*
+	  *  Checks if map is loaded
+	  */
     private void initializeMap() {
+    	Log.d("TestActivity", "InitializeMap");
         if (googleMap == null) {
             googleMap = ((MapFragment) getFragmentManager().findFragmentById(
                     R.id.map)).getMap();
  
             // check if map is created successfully or not
-            if (googleMap == null) {
-                Toast.makeText(getApplicationContext(),
-                        "Sorry! unable to create maps", Toast.LENGTH_SHORT)
-                        .show();
+            if (googleMap != null) {
             }
         }
     } // initializeMap()
@@ -414,21 +585,25 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 
 	@Override
 	public void onCancel() {
-		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
 	public void onFinish() {
-		// TODO Auto-generated method stub
-		
 	}
 
+
+	@Override
+	public void onBackPressed(){
+		super.onBackPressed();
+		googleMap = null;
+		
+	}
 	/**
 	 * Used to draw circles around the marker of the map
 	 */
-    private Circle drawCircle(LatLng position){
+    private static Circle drawCircle(LatLng position){
     	
         CircleOptions circle = new CircleOptions();
  
@@ -444,8 +619,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         
     }
     
-    public static void storeMap(HashMap<String, Boolean> map){
-    	daysPicked = map;
+    public static void storeTime(String s){
+    	tempTime = s;
     }
     
     /*
@@ -461,6 +636,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 			
 		googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), time, null);
     }
+    
+   
 
     
     // These below methods are for LocationListener

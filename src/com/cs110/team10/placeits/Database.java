@@ -9,30 +9,27 @@ import android.util.Log;
 import com.google.android.gms.maps.model.Marker;
 
 public class Database {
-	private HashMap<Marker, HashMap<String, Boolean>>  daysPicked;
-	private HashMap<Marker, String> markers;
+	public  HashMap<Marker, String>  timePicked;
+	public  HashMap<Marker, String> markers;
 	
 	
 	public Database(){
         markers = new HashMap<Marker, String>();
-		daysPicked = new HashMap<Marker, HashMap<String, Boolean>>();
+		timePicked = new HashMap<Marker, String>();
 	}
 	
 	
 	
 
-	
-	public void addDaysPicked(Marker marker, HashMap<String, Boolean> days){
-		daysPicked.put(marker, days);
-	}
+
 	
 	public void removeDaysPicked(Marker marker){
-		if(daysPicked.containsKey(marker)){
+		if(timePicked.containsKey(marker)){
 			Log.d("Database", "Marker removed!");
 
-			daysPicked.remove(marker);
+			timePicked.remove(marker);
 		}else{
-			Log.d("Database", "Marker failed to remove, not in daysPicked map");
+			Log.d("Database", "Marker failed to remove, not in timePicked map");
 			
 		}
 	}
@@ -44,8 +41,11 @@ public class Database {
 	public HashMap<Marker,String> getMarkerList(){
 		return markers;
 	}
+	
 
-
+	public void addTime(Marker marker, String s){
+		timePicked.put(marker,s);
+	}
 	
 
 }

@@ -22,7 +22,6 @@ public class GeoAlert extends BroadcastReceiver {
 	 
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	double d = intent.getDoubleExtra("latitude", 0);
 	    	
 	    	Intent completeIntent = new Intent(context, NotificationHandler.class);
 	    	completeIntent.putExtra("completed", true);
