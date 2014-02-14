@@ -58,7 +58,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private  static LocationManager locationManager;
 	private static LocationManager alarmLocationManager;
 	private  static PendingIntent pendingIntent; // Used for display notifications
-	private SharedPreferences sharedPreferences; // Used for saving markers, and reminders
+	private static SharedPreferences sharedPreferences; // Used for saving markers, and reminders
 	
 	
 	// Used for storing Data
@@ -343,6 +343,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 					Toast.makeText(TestActivity.this, "Alarm cancelled!", Toast.LENGTH_SHORT).show();
 
 				}
+				Log.d("Remove Alarm", "Trying to remove " + marker.getId());
 				alarm.cancel(alarmIntent);
 				SharedPreferences.Editor editor = sharedPreferences.edit();
 				if(sharedPreferences.contains("markerAlarm_" + marker.getId())){
@@ -415,8 +416,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 editor.putString("markerLong_" + added.getId(), String.valueOf(tempPos.longitude));
                 Log.d("TestActivity", "adding markerMessage_" + added.getId());
                 
-                
-                Log.d("testActivity", tempTime);
+                if(tempTime != null){
+                	Log.d("testActivity", tempTime);
+                }else{
+                	Log.d("testActivity", "No Alarm mode was set");
+                }
                 // Setting Alarm notifications
                 if(tempTime != null && tempTime.equals("weekly")){  // Weekly reminder
                 	setWeeklyAlarm(TestActivity.this, added, tempValue, added.getId());
@@ -490,14 +494,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	        	Toast.makeText(TestActivity.this, "Alarm has not been set!", Toast.LENGTH_SHORT).show();
 	        }
 	    }
-	    
-	 private static void addAllMarkers(Map<Marker, String> map) {
-		 for (Entry<Marker, String> entry : map.entrySet()) {
-			    Marker key = entry.getKey();
-			    String value = entry.getValue();
-			    googleMap.addMarker(new MarkerOptions().position(key.getPosition()).title(value));
-			}
-	}
+
 	 
 	 public static Marker addAMarker(LatLng position, String message, Context context){
 
@@ -519,6 +516,28 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 
             // Adding a proximity alert on the marker based on radiusSize. Expiration is -1, so it will never expire. 
             locationManager.addProximityAlert(position.latitude, position.longitude, (long)radiusSize, -1, pendingIntent);
+            
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            // Adding Marker data
+            editor.putString("ID", m.getId());
+            editor.putString("markerMessage_" + m.getId(), message);
+            editor.putString("markerLat_" + m.getId(), String.valueOf(position.latitude));
+            editor.putString("markerLong_" + m.getId(), String.valueOf(position.longitude));
+            Log.d("AddAMarker", "adding markerMessage_" + m.getId());
+            
+            
+            Log.d("AddAMarker Alarm mode", tempTime);
+            // Setting Alarm notifications
+            if(tempTime != null && tempTime.equals("weekly")){  // Weekly reminder
+                editor.putString("markerAlarm_" + m.getId(), "weekly");
+                
+            }else if(tempTime != null && tempTime.equals("minute")){ // Reminder every minute
+            	Log.d("TestActivity", "Saving markerAlarm_" + m.getId());
+            	
+                editor.putString("markerAlarm_" + m.getId(), "minute");
+            }
+            tempTime = null;    // Reset tempTime to avoid errors when adding a marker with no specified Alarm 
+            editor.commit();
             
             return m;
          
@@ -568,18 +587,12 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         }
     } // initializeMap()
 
-    /*
-     * Used to re-add all markers when orientation is changed. 
-     */
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-    	Log.d("TestActivity", "wee woo");
+    	Log.d("TestActivity", "Configuration Changed");
 
-        
-        if(!database.getMarkerList().isEmpty()){
-        	addAllMarkers(database.getMarkerList());
-        }
         
     }
 

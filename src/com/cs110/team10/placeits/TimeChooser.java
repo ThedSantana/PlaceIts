@@ -68,6 +68,8 @@ public class TimeChooser extends Activity {
 			    	TestActivity.storeTime("minute");
 		    	}else if(timePicked.get("weekly")){
 		    		TestActivity.storeTime("weekly");
+		    	}else{
+		    		TestActivity.storeTime(null);
 		    	}
 		    	setResult(RESULT_OK);
 	            finish();
