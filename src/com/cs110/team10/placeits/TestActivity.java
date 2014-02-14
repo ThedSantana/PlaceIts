@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -97,6 +98,21 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
         
+        
+		// Create a criteria object to retrieve provider
+		Criteria criteria = new Criteria();
+		String provider = locationManager.getBestProvider(criteria, true);
+		Location myLocation = locationManager.getLastKnownLocation(provider);
+		if (myLocation != null) {
+			// Get latitude of the current location
+			double myLatitude = myLocation.getLatitude();
+			// Get longitude of the current location
+			double myLongitude = myLocation.getLongitude();
+			// Create a LatLng object for the current location
+			LatLng latLng = new LatLng(myLatitude, myLongitude);
+			googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+			googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+		}
         
         circleMap = new HashMap<Marker, Circle>();
         
@@ -201,18 +217,18 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         	Toast.makeText(TestActivity.this, "Tap on a spot to add a note", Toast.LENGTH_SHORT).show();
         	addMarker = true;
             return true;
-        case R.id.action_location_found:
-            // location found
+            
+        case R.id.action_search:
+            // search action
             return true;
-        case R.id.action_refresh:
-            // refresh
+            
+        case R.id.action_about:
+            // about us action
+        	Intent i = new Intent(TestActivity.this, AboutUs.class);
+        	startActivity(i);
+        	
             return true;
-        case R.id.action_help:
-            // help action
-            return true;
-        case R.id.action_check_updates:
-            // check for updates action
-            return true;
+            
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -613,8 +629,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		googleMap = null;
 		
 	}
-	/**
-	 * Used to draw circles around the marker of the map
+	/*
+	 * Draws a circle around the markers of the map
 	 */
     private static Circle drawCircle(LatLng position){
     	
@@ -643,7 +659,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		CameraPosition cameraPosition = new CameraPosition.Builder()
 				.target(new LatLng(latitude, longitude))
 				.zoom(15) 
-				.bearing(90) // Sets the orientation of the camera to east
+				.bearing(60) // Sets the orientation of the camera to east
 				.tilt(30) // Sets the tilt of the camera to 30 degrees		
 				.build(); // Creates a CameraPosition from the builder
 			

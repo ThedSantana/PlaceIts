@@ -27,5 +27,9 @@
     <string name="title_activity_settings_layout">MainActivity</string>
     <string name="oneMin">One Minute</string>
     <string name="weekly">Weekly</string>
+    <string name="action_about">About Us</string>
+    <string name="okay">Okay</string>
+    <string name="about_text">Project Developers: \n \n Andrew Du \n Joseph Anz \n Hardy Lou \n Daniel Mariano \n Chen Liao \n Navid Afsarifard \n</string>
+    <string name="about_us">About Us</string>
 
 </resources>

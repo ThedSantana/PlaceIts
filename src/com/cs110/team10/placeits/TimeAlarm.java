@@ -1,14 +1,8 @@
 package com.cs110.team10.placeits;
 
-import java.util.Calendar;
 
 import com.google.android.gms.maps.model.LatLng;
 
-
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;

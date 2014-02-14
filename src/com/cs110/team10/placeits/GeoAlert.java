@@ -40,7 +40,7 @@ public class GeoAlert extends BroadcastReceiver {
 	        enteredMarker = intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, true);
 	 
 	        if(enteredMarker){  
-	        	notificationTitle = "New task!";
+	        	notificationTitle = "New task found!";
 	            notificationContent = intent.getStringExtra("message");
 	            tickerMessage = notificationContent;
 	        
