@@ -29,7 +29,8 @@
     <string name="weekly">Weekly</string>
     <string name="action_about">About Us</string>
     <string name="okay">Okay</string>
-    <string name="about_text">Project Developers: \n \n Andrew Du \n Joseph Anz \n Hardy Lou \n Daniel Mariano \n Chen Liao \n Navid Afsarifard \n</string>
+    <string name="about_text">Team 10 Project Developers: \n \n Andrew Du \n Joseph Anz \n Hardy Lou \n Daniel Mariano \n Chen Liao \n Navid Afsarifard \n</string>
     <string name="about_us">About Us</string>
-
-</resources>
+    <string name="active_list">ActiveList</string>
+    
+   </resources>

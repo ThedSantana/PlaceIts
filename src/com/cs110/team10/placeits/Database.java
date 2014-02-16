@@ -21,7 +21,9 @@ public class Database {
 	
 	
 
-
+	public String getMarkerName(Marker marker) {
+		return (String) markers.get(marker);
+	}
 	
 	public void removeDaysPicked(Marker marker){
 		if(timePicked.containsKey(marker)){

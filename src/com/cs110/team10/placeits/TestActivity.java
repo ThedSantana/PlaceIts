@@ -47,7 +47,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class TestActivity extends Activity implements OnMapClickListener, OnMarkerClickListener, CancelableCallback, LocationListener{
-	private static GoogleMap googleMap;
+	static GoogleMap googleMap;
 	private static boolean addMarker = false;
 	private final static double radiusSize = 804;      // Radius of notification marker in meters
 	
@@ -63,7 +63,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	
 	
 	// Used for storing Data
-	private static Database database;
+	public static Database database;
 	private int ID = 0;           // Used to give each marker an ID for storing them in data
 	
 	private static HashMap<Marker, Circle> circleMap;
@@ -219,8 +219,9 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
             return true;
             
         case R.id.action_search:
-            // search action
-            return true;
+        	Intent aL = new Intent(TestActivity.this, activeList.class);
+     		startActivity(aL);
+     		return true;
             
         case R.id.action_about:
             // about us action
@@ -658,7 +659,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     public static void moveCamera(double latitude, double longitude, int time){
 		CameraPosition cameraPosition = new CameraPosition.Builder()
 				.target(new LatLng(latitude, longitude))
-				.zoom(15) 
+				.zoom(12) 
 				.bearing(60) // Sets the orientation of the camera to east
 				.tilt(30) // Sets the tilt of the camera to 30 degrees		
 				.build(); // Creates a CameraPosition from the builder
