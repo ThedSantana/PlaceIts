@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,8 +30,11 @@ public class activeList extends Activity{
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_LEFT_ICON);
         setContentView(R.layout.activelist);
+        getWindow().setFeatureDrawableResource(Window.FEATURE_LEFT_ICON, R.drawable.ic_launcher);
+        super.onCreate(savedInstanceState);
         
         // Get ListView object from xml
         listView = (ListView) findViewById(R.id.list);

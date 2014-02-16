@@ -217,17 +217,18 @@ containing a value of this type.
         public static final int ic_action_about=0x7f020018;
         public static final int ic_action_accept=0x7f020019;
         public static final int ic_action_cancel=0x7f02001a;
-        public static final int ic_action_help=0x7f02001b;
-        public static final int ic_action_location_found=0x7f02001c;
-        public static final int ic_action_new_attachment=0x7f02001d;
-        public static final int ic_action_new_event=0x7f02001e;
-        public static final int ic_action_refresh=0x7f02001f;
-        public static final int ic_action_search=0x7f020020;
-        public static final int ic_launcher=0x7f020021;
-        public static final int ic_plusone_medium_off_client=0x7f020022;
-        public static final int ic_plusone_small_off_client=0x7f020023;
-        public static final int ic_plusone_standard_off_client=0x7f020024;
-        public static final int ic_plusone_tall_off_client=0x7f020025;
+        public static final int ic_action_directions=0x7f02001b;
+        public static final int ic_action_help=0x7f02001c;
+        public static final int ic_action_location_found=0x7f02001d;
+        public static final int ic_action_new_attachment=0x7f02001e;
+        public static final int ic_action_new_event=0x7f02001f;
+        public static final int ic_action_refresh=0x7f020020;
+        public static final int ic_action_search=0x7f020021;
+        public static final int ic_launcher=0x7f020022;
+        public static final int ic_plusone_medium_off_client=0x7f020023;
+        public static final int ic_plusone_small_off_client=0x7f020024;
+        public static final int ic_plusone_standard_off_client=0x7f020025;
+        public static final int ic_plusone_tall_off_client=0x7f020026;
     }
     public static final class id {
         public static final int aboutText=0x7f050005;
@@ -242,6 +243,7 @@ containing a value of this type.
         public static final int barVert=0x7f050011;
         public static final int chooseDaysCancel=0x7f050010;
         public static final int chooseDaysConfirm=0x7f050012;
+        public static final int continuous_track=0x7f050017;
         public static final int hybrid=0x7f050004;
         public static final int list=0x7f050009;
         public static final int map=0x7f05000b;
@@ -386,6 +388,7 @@ containing a value of this type.
          */
         public static final int common_signin_button_text_long=0x7f060013;
         public static final int confirm=0x7f060030;
+        public static final int continuous_track=0x7f060039;
         public static final int hello_world=0x7f060020;
         public static final int okay=0x7f060035;
         public static final int oneMin=0x7f060032;

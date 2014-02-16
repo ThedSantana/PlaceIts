@@ -8,7 +8,7 @@
     <string name="title_section3">Section 3</string>
     <string name="title_activity_test">MainActivity</string>
     <string name="hello_world">Hello world!</string>
-    <string name="action_search">Search here!</string>
+    <string name="action_search">Current Tasks</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_help">Help</string>
     <string name="action_check_updates">Updates</string>
@@ -31,6 +31,7 @@
     <string name="okay">Okay</string>
     <string name="about_text">Team 10 Project Developers: \n \n Andrew Du \n Joseph Anz \n Hardy Lou \n Daniel Mariano \n Chen Liao \n Navid Afsarifard \n</string>
     <string name="about_us">About Us</string>
-    <string name="active_list">ActiveList</string>
+    <string name="active_list">Current Tasks</string>
+    <string name="continuous_track">Continuous Tracking</string>
     
    </resources>

@@ -27,6 +27,8 @@
      The following two permissions are not required to use
      Google Maps Android API v2, but are recommended.
     -->
+    <uses-permission android:name="android.permission.ACCESS_GPS" />
+	<uses-permission android:name="android.permission.ACCESS_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
@@ -69,7 +71,8 @@
             android:label="@string/about_us"
             android:theme="@android:style/Theme.Holo.Light.Dialog"
             android:configChanges="orientation"
-   		    android:screenOrientation="portrait" >
+   		    android:screenOrientation="portrait"
+   		     >
         </activity>
         
         <activity

@@ -33,6 +33,11 @@ import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
@@ -46,7 +51,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class TestActivity extends Activity implements OnMapClickListener, OnMarkerClickListener, CancelableCallback, LocationListener{
+public class TestActivity extends Activity implements OnMapClickListener, OnMarkerClickListener, 
+			com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks, CancelableCallback, 
+			com.google.android.gms.location.LocationListener, LocationListener, OnConnectionFailedListener{
+	
 	static GoogleMap googleMap;
 	private static boolean addMarker = false;
 	private final static double radiusSize = 804;      // Radius of notification marker in meters
@@ -73,6 +81,20 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private PendingIntent alarmIntent; 
 	
 	static Context thisContext;
+	
+	// Used for Mocking
+	private LocationRequest locationRequest;
+	private LocationClient locationClient;
+	private boolean tracking = false;
+	
+	private static final int MILLISECONDS_PER_SECOND = 1000;
+	public static final int UPDATE_INTERVAL_IN_SECONDS = 1;
+	// Update frequency in milliseconds
+	private static final long UPDATE_INTERVAL = MILLISECONDS_PER_SECOND * UPDATE_INTERVAL_IN_SECONDS;
+	// The fastest update frequency, in seconds
+	private static final int FASTEST_INTERVAL_IN_SECONDS = 1;
+	// A fast frequency ceiling in milliseconds
+	private static final long FASTEST_INTERVAL = MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
 
 	 
 	@Override
@@ -98,6 +120,14 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
         
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // Set the update interval to 5 seconds
+        locationRequest.setInterval(UPDATE_INTERVAL);
+        // Set the fastest update interval to 1 second
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        
+        locationClient = new LocationClient(this, this, this);
         
 		// Create a criteria object to retrieve provider
 		Criteria criteria = new Criteria();
@@ -226,9 +256,20 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         case R.id.action_about:
             // about us action
         	Intent i = new Intent(TestActivity.this, AboutUs.class);
-        	startActivity(i);
-        	
+        	startActivity(i);      	
             return true;
+            
+        case R.id.continuous_track:
+        	if(tracking == false){
+	        	tracking = true;
+	        	Toast.makeText(TestActivity.this, "Continuous Tracking Enabled!", Toast.LENGTH_SHORT).show();
+        	}else if(tracking == true){
+        		tracking = false;
+	        	Toast.makeText(TestActivity.this, "Continuous Tracking Disabled!", Toast.LENGTH_SHORT).show();
+        	}
+        	return true;
+        	
+
             
         default:
             return super.onOptionsItemSelected(item);
@@ -673,8 +714,9 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     // These below methods are for LocationListener
 	@Override
 	public void onLocationChanged(Location location) {
-		// TODO Auto-generated method stub
-		
+		if(googleMap != null && tracking == true){
+			googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()), 14));		
+		}
 	}
 
 
@@ -698,6 +740,47 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		
 	}
     // These above methods are for LocationListener
+
+
+	@Override
+	public void onConnected(Bundle bundle) {
+		locationClient.requestLocationUpdates(locationRequest, this);		
+	}
+
+
+	@Override
+	public void onDisconnected() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onConnectionFailed(ConnectionResult arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/*
+     * Called when the Activity becomes visible.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Connect the client.
+        locationClient.connect();
+    }
+    
+    /*
+     * Called when the Activity is no longer visible.
+     */
+    @Override
+    protected void onStop() {
+        // Disconnecting the client invalidates it.
+        locationClient.disconnect();
+        super.onStop();
+    }
+
 
 
 
