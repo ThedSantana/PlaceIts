@@ -108,8 +108,10 @@ public class TestActivityTest extends ActivityInstrumentationTestCase2<TestActiv
 		solo.clickOnRadioButton(0);
 		solo.clickOnButton("Confirm");
 		//solo.takeScreenshot();
-		solo.drag(600, 500, 600, 500, 1);
-		solo.drag(500, 600, 500, 600, 1);
+		
+		solo.drag(400, 400, 400, 400, 3);
+ 		//solo.drag(450, 400, 450, 400, 3);
+		
 		solo.clickOnActionBarItem(R.id.action_add_note);
 		solo.clickOnText("Tap on a spot to add a note");
 		//when they enter text and click remove alarm
@@ -130,8 +132,8 @@ public class TestActivityTest extends ActivityInstrumentationTestCase2<TestActiv
 		solo.clickOnRadioButton(1);
 		solo.clickOnButton("Confirm");
 		solo.takeScreenshot();
-		solo.drag(600, 500, 600, 500, 1);
-		solo.drag(500, 600, 500, 600, 1);
+		solo.drag(400, 400, 400, 400, 3);
+		
 		solo.clickOnActionBarItem(R.id.action_add_note);
 		solo.clickOnText("Tap on a spot to add a note");
 		//when they enter text and click snooze
@@ -140,11 +142,11 @@ public class TestActivityTest extends ActivityInstrumentationTestCase2<TestActiv
 		
 		
 		//Given that click on active items 
-		solo.clickOnActionBarItem(R.id.activitylist);
+		solo.clickOnActionBarItem(R.id.action_search);
 		solo.clickOnText("Fourth Note");
 		
 		//click on active items 
-		solo.clickOnActionBarItem(R.id.activitylist);
+		solo.clickOnActionBarItem(R.id.action_search);
 		solo.clickOnButton("Okay");
 		solo.takeScreenshot();
 		
