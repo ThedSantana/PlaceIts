@@ -13,7 +13,7 @@
     <string name="action_help">Help</string>
     <string name="action_check_updates">Updates</string>
     <string name="action_location_found">Location Found!</string>
-    <string name="action_add_note">Add Notes</string>
+    <string name="action_add_note">Add note</string>
     <string name="cancel">Cancel</string>
     <string name="Sunday">Sunday</string>
     <string name="Monday">Monday</string>
@@ -27,7 +27,7 @@
     <string name="title_activity_settings_layout">MainActivity</string>
     <string name="oneMin">One Minute</string>
     <string name="weekly">Weekly</string>
-    <string name="action_about">About Us</string>
+    <string name="action_about">About</string>
     <string name="okay">Okay</string>
     <string name="about_text">Team 10 Project Developers: \n \n Andrew Du \n Joseph Anz \n Hardy Lou \n Daniel Mariano \n Chen Liao \n Navid Afsarifard \n</string>
     <string name="about_us">About Us</string>

@@ -2,20 +2,19 @@ package com.cs110.team10.placeits;
 
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Criteria;
@@ -23,6 +22,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -35,7 +35,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -87,6 +86,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private LocationClient locationClient;
 	private boolean tracking = false;
 	
+	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 	private static final int MILLISECONDS_PER_SECOND = 1000;
 	public static final int UPDATE_INTERVAL_IN_SECONDS = 1;
 	// Update frequency in milliseconds
@@ -128,7 +128,6 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         locationRequest.setFastestInterval(FASTEST_INTERVAL);
         
         locationClient = new LocationClient(this, this, this);
-        
 		// Create a criteria object to retrieve provider
 		Criteria criteria = new Criteria();
 		String provider = locationManager.getBestProvider(criteria, true);
@@ -412,10 +411,28 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 			}
 		});
 		
-		alert.setNegativeButton("Cancel",
+		alert.setNegativeButton("Snooze",
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
-						// Do nothing because the user clicked cancel
+						// Snoozes alarm for 10 seconds because the user clicked
+						marker.setVisible(false);
+						Log.d("TestActivity", "Alarm Snoozed!");
+						Toast.makeText(TestActivity.this, "Alarm snoozed!",
+								Toast.LENGTH_SHORT).show();
+
+						final Handler handler = new Handler();
+						Timer t = new Timer();
+						t.schedule(new TimerTask() {
+							public void run() {
+								handler.post(new Runnable() {
+									public void run() {
+										Log.d("TestActivity", "Enters Here!");
+										marker.setVisible(true);
+									}
+
+								});
+							}
+						}, 10000);
 					}
 		});
 
@@ -583,8 +600,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
             editor.putString("markerLong_" + m.getId(), String.valueOf(position.longitude));
             Log.d("AddAMarker", "adding markerMessage_" + m.getId());
             
-            
-            Log.d("AddAMarker Alarm mode", tempTime);
+            if(tempTime != null){
+            	Log.d("AddAMarker Alarm mode", tempTime);
+            }else{
+            	Log.d("AddAMarker Alarm Mode", "Alarm Mode not set!");
+            }
             // Setting Alarm notifications
             if(tempTime != null && tempTime.equals("weekly")){  // Weekly reminder
                 editor.putString("markerAlarm_" + m.getId(), "weekly");
@@ -715,6 +735,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	@Override
 	public void onLocationChanged(Location location) {
 		if(googleMap != null && tracking == true){
+			Log.d(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
 			googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()), 14));		
 		}
 	}
@@ -744,21 +765,46 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 
 	@Override
 	public void onConnected(Bundle bundle) {
-		locationClient.requestLocationUpdates(locationRequest, this);		
+		if(locationClient != null){
+			locationClient.requestLocationUpdates(locationRequest, this);	
+		}
 	}
 
 
 	@Override
 	public void onDisconnected() {
-		// TODO Auto-generated method stub
-		
+		// Display the connection status 
+		Toast.makeText(this, "Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();		
 	}
 
 
 	@Override
-	public void onConnectionFailed(ConnectionResult arg0) {
-		// TODO Auto-generated method stub
-		
+	public void onConnectionFailed(ConnectionResult connectionResult) {
+		/*
+		 * Google Play services can resolve some errors it detects. If the error
+		 * has a resolution, try sending an Intent to start a Google Play
+		 * services activity that can resolve error.
+		 */
+		if (connectionResult.hasResolution()) {
+			try {
+				// Start an Activity that tries to resolve the error
+				connectionResult.startResolutionForResult(this,
+						CONNECTION_FAILURE_RESOLUTION_REQUEST);
+				/*
+				 * Thrown if Google Play services canceled the original
+				 * PendingIntent
+				 */
+			} catch (IntentSender.SendIntentException e) {
+				// Log the error
+				e.printStackTrace();
+			}
+		} else {
+			/*
+			 * If no resolution is available, display a dialog to the user with
+			 * the error.
+			 */
+			Toast.makeText(this, "FAILURE!", Toast.LENGTH_LONG).show();
+		}
 	}
 	
 	/*
