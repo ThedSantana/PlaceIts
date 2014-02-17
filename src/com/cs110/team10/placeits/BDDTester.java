@@ -19,10 +19,10 @@ import android.test.ActivityInstrumentationTestCase2;
 
 
 
-public class TestActivityTest extends ActivityInstrumentationTestCase2<TestActivity>{
+public class BDDTester extends ActivityInstrumentationTestCase2<TestActivity>{
 
 	private Solo solo;
-	public TestActivityTest() {
+	public BDDTester() {
 		super(TestActivity.class);
 
 	}
@@ -144,6 +144,8 @@ public class TestActivityTest extends ActivityInstrumentationTestCase2<TestActiv
 		//Given that click on active items 
 		solo.clickOnActionBarItem(R.id.action_search);
 		solo.clickOnText("Fourth Note");
+		
+		 solo.drag(400, 400, 400, 400, 3);
 		
 		//click on active items 
 		solo.clickOnActionBarItem(R.id.action_search);
