@@ -33,5 +33,9 @@
     <string name="about_us">About Us</string>
     <string name="active_list">Current Tasks</string>
     <string name="continuous_track">Continuous Tracking</string>
+    <string name="placeits">Place Its</string>
+    <string name="login">Log In</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
     
    </resources>
