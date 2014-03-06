@@ -1,6 +1,5 @@
 package com.cs110.team10.placeits;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Rect;
@@ -8,57 +7,45 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class LoginActivity extends Activity{
+public class SignUpActivity extends Activity{
 	private Rect rect;    // hold the bounds of the login button
-	
-	@Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.login_layout);
-        
 
-        // Set the typefaces
+	@Override
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.signup_layout);
+		
+		
+		 // Set the typefaces
         Typeface titleTypeface = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Light.ttf");
         Typeface buttonTypeface = Typeface.createFromAsset(getAssets(), "fonts/RobotoCondensed-Bold.ttf");
 
         // Title Text
-        TextView title = (TextView)findViewById(R.id.title);
+        TextView title = (TextView)findViewById(R.id.signUpTextView);
         title.setTypeface(titleTypeface);
         
 
         // Username
-        final EditText usernameText = (EditText) findViewById(R.id.username_edit);
+        final EditText usernameText = (EditText) findViewById(R.id.yourUsername);
         usernameText.setTypeface(titleTypeface);
 		
         
         // Password
-        final EditText passwordText = (EditText) findViewById(R.id.password_edit);
+        final EditText passwordText = (EditText) findViewById(R.id.yourPassword);
         passwordText.setTypeface(titleTypeface);
         
-        // Create account textView
-        final TextView createAccount = (TextView) findViewById(R.id.createAccount);
-        createAccount.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-				startActivity(intent);
-			}
-		});
-        
-        // Login Button
-        final Button loginButton = (Button)findViewById(R.id.btn_login);
-        loginButton.setTypeface(buttonTypeface);
+     // Create account button Button
+        final Button createAccountButton = (Button)findViewById(R.id.btn_create_account);
+        createAccountButton.setTypeface(buttonTypeface);
        
         
-      loginButton.setOnTouchListener(new OnTouchListener() {
+      createAccountButton.setOnTouchListener(new OnTouchListener() {
 		
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
@@ -74,17 +61,18 @@ public class LoginActivity extends Activity{
 				 if(rect.contains(rect.left + (int)event.getX(), rect.top + (int)event.getY())){
 					// Check if Username/password fields are filled in
 					 if(usernameText.getText().length() == 0){
-						Toast.makeText(LoginActivity.this, "Please enter your username.", Toast.LENGTH_SHORT).show();
+						Toast.makeText(SignUpActivity.this, "Please enter your username.", Toast.LENGTH_SHORT).show();
 						startMap = false;
 					 }else if(passwordText.getText().length() == 0){
-						Toast.makeText(LoginActivity.this, "Please enter your password.", Toast.LENGTH_SHORT).show();
+						Toast.makeText(SignUpActivity.this, "Please enter your password.", Toast.LENGTH_SHORT).show();
 						startMap = false;
 
 					 }
 						 
 					// Start the map
 					if (startMap) {
-						Intent intent = new Intent(LoginActivity.this, TestActivity.class);
+						Toast.makeText(SignUpActivity.this, "Account created!", Toast.LENGTH_SHORT).show();
+						Intent intent = new Intent(SignUpActivity.this, TestActivity.class);
 						startActivity(intent);	
 						finish();
 					}
@@ -103,10 +91,6 @@ public class LoginActivity extends Activity{
 		}
 	});
         
-        
-        
-        
-        
-        
-    }
+	}
+
 }

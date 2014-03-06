@@ -164,6 +164,10 @@ containing a value of this type.
         public static final int zOrderOnTop=0x7f010010;
     }
     public static final class color {
+        public static final int blue_button_default=0x7f04000f;
+        public static final int blue_button_selected=0x7f040010;
+        public static final int blue_end=0x7f04000a;
+        public static final int blue_start=0x7f04000b;
         public static final int common_action_bar_splitter=0x7f040009;
         /**  Sign-in Button Colors 
          */
@@ -176,8 +180,12 @@ containing a value of this type.
         public static final int common_signin_btn_light_text_disabled=0x7f040006;
         public static final int common_signin_btn_light_text_focused=0x7f040007;
         public static final int common_signin_btn_light_text_pressed=0x7f040005;
-        public static final int common_signin_btn_text_dark=0x7f04000a;
-        public static final int common_signin_btn_text_light=0x7f04000b;
+        public static final int common_signin_btn_text_dark=0x7f040012;
+        public static final int common_signin_btn_text_light=0x7f040013;
+        public static final int grey_button_default=0x7f04000e;
+        public static final int grey_button_selected=0x7f040011;
+        public static final int grey_end=0x7f04000c;
+        public static final int grey_start=0x7f04000d;
     }
     public static final class dimen {
         /**  Default screen margins, per the Android Design guidelines. 
@@ -235,33 +243,38 @@ containing a value of this type.
     }
     public static final class id {
         public static final int aboutText=0x7f050005;
-        public static final int action_about=0x7f05001a;
-        public static final int action_add_note=0x7f050018;
-        public static final int action_search=0x7f050019;
-        public static final int action_settings=0x7f050017;
+        public static final int action_about=0x7f05001f;
+        public static final int action_add_note=0x7f05001d;
+        public static final int action_search=0x7f05001e;
+        public static final int action_settings=0x7f05001c;
         public static final int activemarker=0x7f05000a;
         public static final int activitylist=0x7f050008;
-        public static final int barHorz=0x7f050013;
+        public static final int barHorz=0x7f050018;
         public static final int barHorz1=0x7f050006;
-        public static final int barVert=0x7f050015;
+        public static final int barVert=0x7f05001a;
+        public static final int btn_create_account=0x7f050013;
         public static final int btn_login=0x7f05000e;
-        public static final int chooseDaysCancel=0x7f050014;
-        public static final int chooseDaysConfirm=0x7f050016;
-        public static final int continuous_track=0x7f05001b;
+        public static final int chooseDaysCancel=0x7f050019;
+        public static final int chooseDaysConfirm=0x7f05001b;
+        public static final int continuous_track=0x7f050020;
+        public static final int createAccount=0x7f05000f;
         public static final int hybrid=0x7f050004;
         public static final int list=0x7f050009;
-        public static final int map=0x7f05000f;
+        public static final int map=0x7f050014;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int okay=0x7f050007;
-        public static final int one_min=0x7f050011;
+        public static final int one_min=0x7f050016;
         public static final int password_edit=0x7f05000d;
-        public static final int radio_group=0x7f050010;
+        public static final int radio_group=0x7f050015;
         public static final int satellite=0x7f050002;
+        public static final int signUpTextView=0x7f050010;
         public static final int terrain=0x7f050003;
         public static final int title=0x7f05000b;
         public static final int username_edit=0x7f05000c;
-        public static final int weekly=0x7f050012;
+        public static final int weekly=0x7f050017;
+        public static final int yourPassword=0x7f050012;
+        public static final int yourUsername=0x7f050011;
     }
     public static final class integer {
         public static final int google_play_services_version=0x7f070000;
@@ -271,8 +284,9 @@ containing a value of this type.
         public static final int activelist=0x7f030001;
         public static final int activemarkers=0x7f030002;
         public static final int login_layout=0x7f030003;
-        public static final int test=0x7f030004;
-        public static final int time_chooser=0x7f030005;
+        public static final int signup_layout=0x7f030004;
+        public static final int test=0x7f030005;
+        public static final int time_chooser=0x7f030006;
     }
     public static final class menu {
         public static final int day_chooser=0x7f0a0000;
@@ -397,12 +411,15 @@ containing a value of this type.
         public static final int common_signin_button_text_long=0x7f060013;
         public static final int confirm=0x7f060030;
         public static final int continuous_track=0x7f060039;
+        public static final int createAccount=0x7f060042;
+        public static final int createAccountTitle=0x7f06003f;
         public static final int hello_world=0x7f060020;
         public static final int login=0x7f06003b;
         public static final int okay=0x7f060035;
         public static final int oneMin=0x7f060032;
         public static final int password=0x7f06003d;
         public static final int placeits=0x7f06003a;
+        public static final int signup=0x7f06003e;
         public static final int title_activity_day_chooser=0x7f06002f;
         public static final int title_activity_settings_layout=0x7f060031;
         public static final int title_activity_test=0x7f06001f;
@@ -411,6 +428,8 @@ containing a value of this type.
         public static final int title_section3=0x7f06001e;
         public static final int username=0x7f06003c;
         public static final int weekly=0x7f060033;
+        public static final int yourName=0x7f060040;
+        public static final int yourPassword=0x7f060041;
     }
     public static final class style {
         /** 

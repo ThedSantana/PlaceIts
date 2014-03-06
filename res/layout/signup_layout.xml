@@ -2,25 +2,26 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_style">
+    android:background="@drawable/background_style" >
     
+
      <TextView
-         android:id="@+id/title"
+         android:id="@+id/signUpTextView"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_alignParentTop="true"
          android:layout_centerHorizontal="true"
          android:layout_marginTop="45dp"
-         android:text="@string/placeits"
+         android:text="@string/createAccountTitle"
          android:textColor="@android:color/white"
          android:textSize="30sp"
          />
      
      <EditText
-        android:id="@+id/username_edit"
+        android:id="@+id/yourUsername"
         android:layout_width="250dip"
         android:layout_height="wrap_content"
-        android:layout_below="@id/title"
+        android:layout_below="@id/signUpTextView"
 	    android:layout_marginBottom="1dp"
         android:layout_marginTop="5dp" 
 		android:layout_centerHorizontal="true"
@@ -28,45 +29,32 @@
         android:inputType="text"
         android:maxLines="1" 
         android:textSize="12sp"
-        android:hint="@string/username">
+        android:hint="@string/yourName">
     </EditText>
     
      <EditText
-        android:id="@+id/password_edit"
+        android:id="@+id/yourPassword"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/username_edit"
+        android:layout_below="@id/yourUsername"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="5dp"
         android:background="@android:drawable/editbox_background"
         android:maxLines="1" 
 		android:textSize="12sp"
         android:inputType="textPassword"
-        android:hint="@string/password"
+        android:hint="@string/yourPassword"
 		>
     </EditText>
 
 	<Button
-	    android:id="@+id/btn_login"
+	    android:id="@+id/btn_create_account"
 	    android:layout_width="250dp"
 	    android:layout_height="30dp"
-	    android:layout_below="@id/password_edit"
+	    android:layout_below="@id/yourPassword"
 	    android:layout_centerHorizontal="true"
 	    android:background="@drawable/buttonbackground"
-	    android:text="@string/login"
+	    android:text="@string/createAccount"
 	    android:textColor="@android:color/white"
 	    android:textSize="15sp" />
-	
-	<TextView
-	    android:id="@+id/createAccount"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:layout_alignParentBottom="true"
-	    android:layout_marginBottom="10dp"
-	    android:layout_centerHorizontal="true"
-	    android:text="@string/signup"
-	    android:textColor="@android:color/white"
-	    android:textSize="14sp" 
-	    />
-
 </RelativeLayout>

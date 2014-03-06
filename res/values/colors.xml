@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="blue_end">#FF2C4988</color>
+    <color name="blue_start">#FF5774B5</color>
+    <color name="grey_end">#FF595959</color>
+    <color name="grey_start">#FF929292</color>
+    <color name="grey_button_default">#FF454545</color>
+    <color name="blue_button_default">#FF28427A</color>
+    <color name="blue_button_selected">#FF203562</color>
+    <color name="grey_button_selected">#FF323232</color>
+    
+</resources>
