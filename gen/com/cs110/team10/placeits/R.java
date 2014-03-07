@@ -458,6 +458,9 @@ containing a value of this type.
  All customizations that are NOT specific to a particular API-level can go here. 
          */
         public static final int AppTheme=0x7f090001;
+        /**   ProgressDialog Style 
+         */
+        public static final int ProgressDialog=0x7f090002;
     }
     public static final class styleable {
         /** Attributes that can be used with a AdsAttrs.

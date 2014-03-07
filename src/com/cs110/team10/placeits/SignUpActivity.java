@@ -44,7 +44,7 @@ public class SignUpActivity extends Activity{
 	private EditText usernameText;
 	private EditText passwordText;
 		
-	public static final String TAG = "SignUpActivity";
+	private static final String TAG = "SignUpActivity";
 
 
 	@Override

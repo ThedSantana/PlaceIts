@@ -1,7 +1,21 @@
 package com.cs110.team10.placeits;
 
 
+import java.io.IOException;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -20,6 +34,11 @@ public class LoginActivity extends Activity{
 	private Rect rect;    // hold the bounds of the login button
 	private int requestCode = 1; // Used to start SignUpActivity
 	
+	private static final String TAG = "SignUpActivity";
+
+	private EditText usernameText;
+	private EditText passwordText;
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,12 +55,12 @@ public class LoginActivity extends Activity{
         
 
         // Username
-        final EditText usernameText = (EditText) findViewById(R.id.username_edit);
+        usernameText = (EditText) findViewById(R.id.username_edit);
         usernameText.setTypeface(titleTypeface);
 		
         
         // Password
-        final EditText passwordText = (EditText) findViewById(R.id.password_edit);
+        passwordText = (EditText) findViewById(R.id.password_edit);
         passwordText.setTypeface(titleTypeface);
         
         // Create account textView
@@ -86,9 +105,8 @@ public class LoginActivity extends Activity{
 						 
 					// Start the map
 					if (startMap) {
-						Intent intent = new Intent(LoginActivity.this, TestActivity.class);
-						startActivity(intent);
-						finish();
+						loginChecker();
+						
 					}
 				}
 				return true;
@@ -123,6 +141,66 @@ public class LoginActivity extends Activity{
 		}
 	}
 	
+	/*
+	 * Checks if username and password are in database
+	 */
+	private void loginChecker(){
+		final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
+		Thread t = new Thread() {
+			
+		 public void run(){
+			 HttpClient client = new DefaultHttpClient();
+			 HttpGet request = new HttpGet(Database.PRODUCT_URI);
+				try {
+					HttpResponse response = client.execute(request);
+					HttpEntity entity = response.getEntity();
+					String data = EntityUtils.toString(entity);
+					Log.d(TAG, data);
+					JSONObject myjson;
+					
+					try {
+						myjson = new JSONObject(data);
+						JSONArray array = myjson.getJSONArray("data");
+						for (int i = 0; i < array.length(); i++) {
+							JSONObject obj = array.getJSONObject(i);
+							// Checks if userNameText and passwordText edit boxes are in the database
+							if(usernameText.getText().toString().equals( obj.get("name").toString()) &&
+									passwordText.getText().toString().equals(obj.get("description").toString())){
+								// Account details found, so start the map
+								dialog.dismiss();
+								Intent intent = new Intent(LoginActivity.this, TestActivity.class);
+								startActivity(intent);
+								finish();
+								return;
+							}
+						}
+						
+					} catch (JSONException e) {
+	
+				    	Log.d(TAG, "Error in parsing JSON");
+					}
+					
+				} catch (ClientProtocolException e) {
+	
+			    	Log.d(TAG, "ClientProtocolException while trying to connect to GAE");
+				} catch (IOException e) {
+	
+					Log.d(TAG, "IOException while trying to connect to GAE");
+				}
+				// Account details not found
+				dialog.dismiss();
+				// The below line makes Toasts work in Threads
+				LoginActivity.this.runOnUiThread(new Runnable(){
+		            public void run(){
+						Toast.makeText(LoginActivity.this, "Username and password do not match, try again.", Toast.LENGTH_SHORT).show();
+		            }
+		        });
+				
+		 	} // run()
+		}; // new Thread()
+		t.start();
+		dialog.show();
+	}
 	
 	
 }
