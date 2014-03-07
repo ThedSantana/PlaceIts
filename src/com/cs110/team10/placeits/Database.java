@@ -9,6 +9,10 @@ import android.util.Log;
 import com.google.android.gms.maps.model.Marker;
 
 public class Database {
+	
+	public static final String PRODUCT_URI = "http://mobiletestlab1.appspot.com/product";
+	public static final String ITEM_URI = "http://mobiletestlab1.appspot.com/item";
+	
 	public  HashMap<Marker, String>  timePicked;
 	public  HashMap<Marker, String> markers;
 	

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 public class LoginActivity extends Activity{
 	private Rect rect;    // hold the bounds of the login button
+	private int requestCode = 1; // Used to start SignUpActivity
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class LoginActivity extends Activity{
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-				startActivity(intent);
+				startActivityForResult(intent, requestCode);
 			}
 		});
         
@@ -85,7 +87,7 @@ public class LoginActivity extends Activity{
 					// Start the map
 					if (startMap) {
 						Intent intent = new Intent(LoginActivity.this, TestActivity.class);
-						startActivity(intent);	
+						startActivity(intent);
 						finish();
 					}
 				}
@@ -108,5 +110,19 @@ public class LoginActivity extends Activity{
         
         
         
-    }
+    } // onCreate
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		Log.d("LoginActivity", "onActivityResult");
+		// If map is started, finish this activity.
+		// This prevents pressing the 'back' button and LoginActivity will still be running
+		if(resultCode == RESULT_OK){       
+			finish();
+		}
+	}
+	
+	
+	
 }
