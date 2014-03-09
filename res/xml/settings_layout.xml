@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+ <PreferenceCategory 
+        android:title="@string/accountPreferences"
+        android:key="pref_key_accountPreferences">
+
+        <Preference 
+			android:key="pref_key_signout"
+            android:title="@string/signout" 
+            android:enabled="true" />
+        
+		<Preference 
+            android:key="pref_key_delete_account"
+            android:summary="@string/delete_account_summary"
+            android:title="@string/delete_account_title"
+            android:enabled="true" />
+        
+    </PreferenceCategory>
+
+</PreferenceScreen>

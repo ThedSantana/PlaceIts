@@ -24,10 +24,12 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,6 +46,9 @@ public class SignUpActivity extends Activity{
 	private EditText usernameText;
 	private EditText passwordText;
 		
+	private SharedPreferences sharedPreferences;
+
+	
 	private static final String TAG = "SignUpActivity";
 
 
@@ -167,7 +172,8 @@ public class SignUpActivity extends Activity{
 		final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
 		Thread t = new Thread() {
 			
-		 public void run(){
+
+		public void run(){
 			 HttpClient client = new DefaultHttpClient();
 			 HttpGet request = new HttpGet(Database.PRODUCT_URI);
 				try {
@@ -217,6 +223,11 @@ public class SignUpActivity extends Activity{
 						Toast.makeText(SignUpActivity.this, "Account created!", Toast.LENGTH_SHORT).show();
 		            }
 		        });
+				sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+		        SharedPreferences.Editor editor = sharedPreferences.edit();
+	            // Adding Username data
+	            editor.putString("Username", usernameText.getText().toString());
+	            editor.commit();
 				Intent intent = new Intent(SignUpActivity.this, TestActivity.class);
 				startActivity(intent);	
 				setResult(RESULT_OK);

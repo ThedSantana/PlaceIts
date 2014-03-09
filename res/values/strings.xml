@@ -42,5 +42,9 @@
     <string name="yourName">Your username?</string>
     <string name="yourPassword">Your password?</string>
     <string name="createAccount">Create Account</string>
+    <string name="accountPreferences">Account Preferences</string>
+    <string name="signout">Sign Out</string>
+    <string name="delete_account_summary">Permanently delete this account? You cannot undo this action.</string>
+    <string name="delete_account_title">Delete Account</string>
     
    </resources>

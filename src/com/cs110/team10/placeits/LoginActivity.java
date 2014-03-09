@@ -17,9 +17,11 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,11 +41,22 @@ public class LoginActivity extends Activity{
 	private EditText usernameText;
 	private EditText passwordText;
 	
+	private SharedPreferences sharedPreferences;
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_layout);
         
+        // Check if user has logged in already
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        if(sharedPreferences.contains("Username")){
+        	// Start the map
+        	Intent intent = new Intent(LoginActivity.this, TestActivity.class);
+			startActivity(intent);
+			finish();
+        	
+        }
 
         // Set the typefaces
         Typeface titleTypeface = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Light.ttf");
@@ -168,6 +181,11 @@ public class LoginActivity extends Activity{
 									passwordText.getText().toString().equals(obj.get("description").toString())){
 								// Account details found, so start the map
 								dialog.dismiss();
+								Log.d("LoginActivity", "Username/Password Saved");
+						        SharedPreferences.Editor editor = sharedPreferences.edit();
+					            // Adding Username data
+					            editor.putString("Username", usernameText.getText().toString());
+					            editor.commit();
 								Intent intent = new Intent(LoginActivity.this, TestActivity.class);
 								startActivity(intent);
 								finish();

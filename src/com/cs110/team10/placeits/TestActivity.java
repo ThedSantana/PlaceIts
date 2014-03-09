@@ -74,7 +74,6 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private int ID = 0;           // Used to give each marker an ID for storing them in data
 	
 	private static HashMap<Marker, Circle> circleMap;
-	private HashMap<Marker, String> timeMode;
 	private static String tempTime;    // Temporary time used for onActivityResult()
 	private AlarmManager alarm;
 	private PendingIntent alarmIntent; 
@@ -96,6 +95,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	// A fast frequency ceiling in milliseconds
 	private static final long FASTEST_INTERVAL = MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
 
+	private int settings_requestcode = 5;
 	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -268,7 +268,10 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         	}
         	return true;
         	
-
+        case R.id.action_settings:
+        	Intent intent = new Intent(TestActivity.this, SettingsActivity.class);
+        	startActivityForResult(intent, settings_requestcode);
+        	return true;
             
         default:
             return super.onOptionsItemSelected(item);
@@ -456,8 +459,10 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		Log.d("TestActivity", "onActivityResult");
+		Log.d("onActivityResult", String.valueOf(resultCode));
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
+            	Log.d("onActivityResult", "Not supposed to be here");
         		added = googleMap.addMarker(new MarkerOptions().position(tempPos).title(tempValue));
         		circleMap.put(added, drawCircle(tempPos));            // For debug purposes
 				database.addMarker(added, tempValue);           // Adds marker to database
@@ -515,10 +520,16 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 
                 
                 editor.commit();
-            }
-        } 
-       
-    }
+			}
+		} else if (requestCode == settings_requestcode) {
+			if (resultCode == RESULT_OK) {
+				Log.d("onActivityResult", "Closing Activity");
+				finish();
+			}
+
+		}
+
+	}
 
 	public void setWeeklyAlarm(Context context, Marker marker, String s, String ID){
 
@@ -656,8 +667,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     private void initializeMap() {
     	Log.d("TestActivity", "InitializeMap");
         if (googleMap == null) {
-            googleMap = ((MapFragment) getFragmentManager().findFragmentById(
-                    R.id.map)).getMap();
+            googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
  
             // check if map is created successfully or not
             if (googleMap != null) {

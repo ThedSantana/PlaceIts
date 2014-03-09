@@ -25,6 +25,13 @@
           android:icon="@drawable/ic_action_location_found"
           android:title="@string/continuous_track"
           android:showAsAction="ifRoom" />
+    
+    <!-- Settings -->
+    <item android:id="@+id/action_settings"
+          android:icon="@drawable/ic_action_settings"
+          android:title="@string/action_settings"
+          android:showAsAction="ifRoom" />
+    
 
      
 
