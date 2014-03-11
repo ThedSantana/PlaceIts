@@ -138,7 +138,7 @@ public class SignUpActivity extends Activity{
 			public void run() {
 				HttpClient client = new DefaultHttpClient();
 				HttpPost post = new HttpPost(Database.PRODUCT_URI);
-
+				
 			    try {
 			    	
 			      List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);

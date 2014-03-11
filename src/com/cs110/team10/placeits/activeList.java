@@ -18,8 +18,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -128,6 +130,8 @@ public class activeList extends Activity{
 	}
 	
 	private class UpdateTask extends AsyncTask<String, Void, List<String>> {
+    	final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
 		 @Override
 	     protected List<String> doInBackground(String... url) {
 	    	    HttpClient client = new DefaultHttpClient();
@@ -145,7 +149,7 @@ public class activeList extends Activity{
 						JSONArray array = myjson.getJSONArray("data");
 						for (int i = 0; i < array.length(); i++) {
 							JSONObject obj = array.getJSONObject(i);
-							if(LoginActivity.usernameText.getText().toString().equals(obj.get("product").toString())){
+							if(preferences.getString("Username", null).equals(obj.get("product").toString())){
 								list.add(obj.get("name").toString());
 								lati.add(Double.parseDouble(obj.get("lat").toString()));
 								longi.add(Double.parseDouble(obj.get("long").toString()));

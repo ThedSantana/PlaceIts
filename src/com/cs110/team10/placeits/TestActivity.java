@@ -127,6 +127,9 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	List<Double> longtitude = new ArrayList<Double>();
 	
 	private double tempMarkerLat; // Used for deleting and adding a marker in Async methods
+	private double tempMarkerLong; // Used for deleting and adding a marker in Async methods
+	private String tempMarkerDescription; // Used for deleting and adding a marker in Async methods
+
 	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -524,12 +527,18 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		Log.d("onActivityResult", String.valueOf(resultCode));
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
-            	Log.d("onActivityResult", "Not supposed to be here");
         		added = googleMap.addMarker(new MarkerOptions().position(tempPos).title(tempValue));
         		circleMap.put(added, drawCircle(tempPos));            // For debug purposes
 				database.addMarker(added, tempValue);           // Adds marker to database
 				
+				// Storing data to server
+				tempMarkerLat = added.getPosition().latitude;
+				tempMarkerLong = added.getPosition().longitude;
+				tempMarkerDescription = tempValue;
 				
+				addAMarkerToServer();
+				
+				// Setting up proximity alert
                 Intent enteredRegionIntent = new Intent(TestActivity.this, GeoAlert.class);
                 
                 // Adding message for the notification system
@@ -903,6 +912,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     }
 
     private class UpdateTask extends AsyncTask<String, Void, List<String>> {
+    	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
 		 @Override
 	     protected List<String> doInBackground(String... url) {
 	    	    HttpClient client = new DefaultHttpClient();
@@ -920,7 +931,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 						JSONArray array = myjson.getJSONArray("data");
 						for (int i = 0; i < array.length(); i++) {
 							JSONObject obj = array.getJSONObject(i);
-							if(LoginActivity.usernameText.getText().toString().equals(obj.get("product").toString())){
+							if(preferences.getString("Username", null).equals(obj.get("product").toString())){
 								list.add(obj.get("name").toString());
 								latitude.add(Double.parseDouble(obj.get("lat").toString()));
 								longtitude.add(Double.parseDouble(obj.get("long").toString()));
@@ -943,59 +954,60 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		 
     } // UpdateTask class
     
-    private class DeleteAMarker extends AsyncTask<String, Void, List<String>> {
-		 @Override
-	     protected List<String> doInBackground(String... url) {
-	    	    HttpClient client = new DefaultHttpClient();
-				HttpDelete delete = new HttpDelete(url[0]);
-				List<String> list = new ArrayList<String>();
-				try {
-					HttpResponse response = client.execute(delete);
-					HttpEntity entity = response.getEntity();
-					String data = EntityUtils.toString(entity);
-					Log.d("TAG", data);
-					JSONObject myjson;
-					
-					try {
-						myjson = new JSONObject(data);
-						JSONArray array = myjson.getJSONArray("data");
-						for (int i = 0; i < array.length(); i++) {
-							JSONObject obj = array.getJSONObject(i);
-							if(LoginActivity.usernameText.getText().toString().equals(obj.get("product").toString())){
-								if(tempMarkerLat == obj.getDouble("lat")){
-									Log.d("Removing marker", "From Server");
-									array.remove(i);
-									list.remove(i);
-									break;
-									// Remove marker from list, latitude, longitude
-								}
-								/*list.add(obj.get("name").toString());
-								latitude.add(Double.parseDouble(obj.get("lat").toString()));
-								longtitude.add(Double.parseDouble(obj.get("long").toString()));*/
-							}
-						}
-						
-					} catch (JSONException e) {
-
-				    	Log.d("TAG", "Error in parsing JSON");
-					}
-					
-				} catch (ClientProtocolException e) {
-
-			    	Log.d("TAG", "ClientProtocolException while trying to connect to GAE");
-				} catch (IOException e) {
-
-					Log.d("TAG", "IOException while trying to connect to GAE");
-				}
-	         return list;
-	     }
-		 
-	 } // DeleteAMarker class
-    private void deleteAMarker(){
-		final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
+    /*
+     * Add a marker to server
+     */
+    private void addAMarkerToServer(){
+    	final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
+    	final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+    	
+	    Log.d("addMarkerServer", preferences.getString("Username", null));
+	    
 		Thread t = new Thread() {
 			
+			public void run() {
+				HttpClient client = new DefaultHttpClient();
+				HttpPost post = new HttpPost(Database.ITEM_URI);
+ 
+			    try {
 
+
+			      List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);
+			      nameValuePairs.add(new BasicNameValuePair("name", tempMarkerDescription));
+			      nameValuePairs.add(new BasicNameValuePair("product", preferences.getString("Username", null)));
+			      nameValuePairs.add(new BasicNameValuePair("long", String.valueOf(tempMarkerLong)));
+			      nameValuePairs.add(new BasicNameValuePair("lat", String.valueOf(tempMarkerLat)));
+			      nameValuePairs.add(new BasicNameValuePair("action",  "put"));
+			      post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+			      HttpResponse response = client.execute(post);
+			      BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			      String line = "";
+			      while ((line = rd.readLine()) != null) {
+			        Log.d(TAG, line);
+			      }
+
+			    } catch (IOException e) {
+			    	Log.d(TAG, "IOException while trying to conect to GAE");
+			    }
+				dialog.dismiss();
+			}
+		};
+
+		t.start();
+		dialog.show();
+	}
+    
+    
+    /*
+     * Deletes marker data from server
+     */
+    private void deleteAMarker(){
+		final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
+    	final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+		Thread t = new Thread() {
+			
 		public void run(){
 		HttpClient client = new DefaultHttpClient();
 		HttpGet get = new HttpGet(Database.ITEM_URI);
@@ -1014,7 +1026,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 				JSONArray array = myjson.getJSONArray("data");
 				for (int i = 0; i < array.length(); i++) {
 					JSONObject obj = array.getJSONObject(i);
-					if(obj.get("product").toString().equals(LoginActivity.usernameText.getText().toString())){
+					if(obj.get("product").toString().equals(preferences.getString("Username", null))){
 						Log.d("DeleteAMarker()", "Removed from " + obj.get("product"));
 						List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 					    nameValuePairs.add(new BasicNameValuePair("id", obj.get("name").toString()));
