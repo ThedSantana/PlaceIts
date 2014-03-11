@@ -1,15 +1,38 @@
 package com.cs110.team10.placeits;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +44,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -54,6 +78,8 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 			com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks, CancelableCallback, 
 			com.google.android.gms.location.LocationListener, LocationListener, OnConnectionFailedListener{
 	
+	public static final String TAG = "TestActivity";
+
 	static GoogleMap googleMap;
 	private static boolean addMarker = false;
 	private final static double radiusSize = 804;      // Radius of notification marker in meters
@@ -96,11 +122,19 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private static final long FASTEST_INTERVAL = MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
 
 	private int settings_requestcode = 5;
+	
+	List<Double> latitude = new ArrayList<Double>();
+	List<Double> longtitude = new ArrayList<Double>();
+	
+	private double tempMarkerLat; // Used for deleting and adding a marker in Async methods
 	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
+		Log.d("TestActivity", "onCreate");
+		
+		googleMap = null;
 		
 		thisContext = getApplicationContext();
 		alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -214,7 +248,25 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         	}
         	
         }
-        
+		List<String> info;
+		try {
+			info = new UpdateTask().execute(Database.ITEM_URI).get();
+			for (int i = 0; i < info.size(); i++) {
+				double lat = latitude.get(i);
+				double lon = longtitude.get(i);
+				String message = info.get(i);
+				// Drawing marker on the map
+				Marker mark = googleMap.addMarker(new MarkerOptions().position(
+						new LatLng(lat, lon)).title(message));
+				// Drawing circle on the map
+				circleMap.put(mark, drawCircle(new LatLng(lat, lon)));
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+
         // Moves camera from NotificationHandler LatLng, if user clicks on "Complete"
 		if(getIntent().getBooleanExtra("moveCamera", false)){	    	
 			moveCamera(getIntent().getDoubleExtra("latitude", 0), getIntent().getDoubleExtra("longitude", 0), 4000);
@@ -341,6 +393,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		marker.showInfoWindow();
 		Log.d("TestActivity", "Marker clicked");
 		Log.d("TestActivity", "REMOVING MARKER " + marker.getId());
+		
+		// Saving marker data
+		tempMarkerLat = marker.getPosition().latitude;
+		
+		
 
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setMessage(database.getMarkerList().get(marker));
@@ -348,6 +405,10 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		// Set an EditText view to get user input
 		alert.setPositiveButton("Complete task", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
+				
+				// Deleting marker from database
+				deleteAMarker();
+				
 				database.getMarkerList().remove(marker);      // Removes marker from markerList
 				database.removeDaysPicked(marker);           // Removes daysPicked for that marker
                 editor.remove("markerLong_" + marker.getId());
@@ -453,6 +514,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	@Override
 	protected void onResume() {
 		super.onResume();
+		Log.d("TestActivity", "onResume");
 		initializeMap();
 
 	}
@@ -667,11 +729,14 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     private void initializeMap() {
     	Log.d("TestActivity", "InitializeMap");
         if (googleMap == null) {
+        	Log.d("InitializeMap", "Creating Map");
             googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
  
             // check if map is created successfully or not
             if (googleMap != null) {
             }
+        }else if(googleMap != null){
+        	Log.d("InitializeMap", "Map already created");
         }
     } // initializeMap()
 
@@ -837,8 +902,156 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         super.onStop();
     }
 
+    private class UpdateTask extends AsyncTask<String, Void, List<String>> {
+		 @Override
+	     protected List<String> doInBackground(String... url) {
+	    	    HttpClient client = new DefaultHttpClient();
+				HttpGet request = new HttpGet(url[0]);
+				List<String> list = new ArrayList<String>();
+				try {
+					HttpResponse response = client.execute(request);
+					HttpEntity entity = response.getEntity();
+					String data = EntityUtils.toString(entity);
+					Log.d("TAG", data);
+					JSONObject myjson;
+					
+					try {
+						myjson = new JSONObject(data);
+						JSONArray array = myjson.getJSONArray("data");
+						for (int i = 0; i < array.length(); i++) {
+							JSONObject obj = array.getJSONObject(i);
+							if(LoginActivity.usernameText.getText().toString().equals(obj.get("product").toString())){
+								list.add(obj.get("name").toString());
+								latitude.add(Double.parseDouble(obj.get("lat").toString()));
+								longtitude.add(Double.parseDouble(obj.get("long").toString()));
+							}
+						}
+					} catch (JSONException e) {
+
+				    	Log.d("TAG", "Error in parsing JSON");
+					}
+					
+				} catch (ClientProtocolException e) {
+
+			    	Log.d("TAG", "ClientProtocolException while trying to connect to GAE");
+				} catch (IOException e) {
+
+					Log.d("TAG", "IOException while trying to connect to GAE");
+				}
+	         return list;
+	     }
+		 
+    } // UpdateTask class
+    
+    private class DeleteAMarker extends AsyncTask<String, Void, List<String>> {
+		 @Override
+	     protected List<String> doInBackground(String... url) {
+	    	    HttpClient client = new DefaultHttpClient();
+				HttpDelete delete = new HttpDelete(url[0]);
+				List<String> list = new ArrayList<String>();
+				try {
+					HttpResponse response = client.execute(delete);
+					HttpEntity entity = response.getEntity();
+					String data = EntityUtils.toString(entity);
+					Log.d("TAG", data);
+					JSONObject myjson;
+					
+					try {
+						myjson = new JSONObject(data);
+						JSONArray array = myjson.getJSONArray("data");
+						for (int i = 0; i < array.length(); i++) {
+							JSONObject obj = array.getJSONObject(i);
+							if(LoginActivity.usernameText.getText().toString().equals(obj.get("product").toString())){
+								if(tempMarkerLat == obj.getDouble("lat")){
+									Log.d("Removing marker", "From Server");
+									array.remove(i);
+									list.remove(i);
+									break;
+									// Remove marker from list, latitude, longitude
+								}
+								/*list.add(obj.get("name").toString());
+								latitude.add(Double.parseDouble(obj.get("lat").toString()));
+								longtitude.add(Double.parseDouble(obj.get("long").toString()));*/
+							}
+						}
+						
+					} catch (JSONException e) {
+
+				    	Log.d("TAG", "Error in parsing JSON");
+					}
+					
+				} catch (ClientProtocolException e) {
+
+			    	Log.d("TAG", "ClientProtocolException while trying to connect to GAE");
+				} catch (IOException e) {
+
+					Log.d("TAG", "IOException while trying to connect to GAE");
+				}
+	         return list;
+	     }
+		 
+	 } // DeleteAMarker class
+    private void deleteAMarker(){
+		final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
+		Thread t = new Thread() {
+			
+
+		public void run(){
+		HttpClient client = new DefaultHttpClient();
+		HttpGet get = new HttpGet(Database.ITEM_URI);
+
+		HttpPost delete = new HttpPost(Database.ITEM_URI);
+		
+		try {
+			HttpResponse response = client.execute(get);
+			HttpEntity entity = response.getEntity();
+			String data = EntityUtils.toString(entity);
+			Log.d(TAG, data);
+			JSONObject myjson;
+			
+			try {
+				myjson = new JSONObject(data);
+				JSONArray array = myjson.getJSONArray("data");
+				for (int i = 0; i < array.length(); i++) {
+					JSONObject obj = array.getJSONObject(i);
+					if(obj.get("product").toString().equals(LoginActivity.usernameText.getText().toString())){
+						Log.d("DeleteAMarker()", "Removed from " + obj.get("product"));
+						List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+					    nameValuePairs.add(new BasicNameValuePair("id", obj.get("name").toString()));
+					    nameValuePairs.add(new BasicNameValuePair("action", "delete"));
+					    
+					    delete.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+						 
+					    client.execute(delete);
+						break;
+					}
+				}
+
+			} catch (JSONException e) {
+
+				Log.d(TAG, "Error in parsing JSON");
+			}
+
+		} catch (ClientProtocolException e) {
+
+			Log.d(TAG,
+					"ClientProtocolException while trying to connect to GAE");
+		} catch (IOException e) {
+
+			Log.d(TAG, "IOException while trying to connect to GAE");
+		}
+		dialog.dismiss();
+
+     }
+		};
+		t.start();
+		dialog.show();
 
 
+
+ }
+
+   
 
 
 }

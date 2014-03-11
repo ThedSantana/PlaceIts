@@ -6,16 +6,22 @@ import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -39,8 +45,9 @@ public class SettingsActivity extends PreferenceActivity {
 	    public void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
 	        addPreferencesFromResource(R.xml.settings_layout);
-	        Preference myPref = (Preference) findPreference("pref_key_signout");
-	        myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+	        Preference signoutPref = (Preference) findPreference("pref_key_signout");
+	        Preference deleteAccountPref = (Preference)findPreference("pref_key_delete_account");
+	        signoutPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 	                     public boolean onPreferenceClick(Preference preference) {
 	                    	 if (preference.getKey().equals("pref_key_signout")) {
 	                			 AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
@@ -55,6 +62,9 @@ public class SettingsActivity extends PreferenceActivity {
 	                									SharedPreferences.Editor editor = sharedPreferences.edit();
 	                									editor.remove("Username");
 	                									editor.commit();
+	                									Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+	            										LoginActivity.usernameText = null;
+	                									startActivity(intent);
 	                									setResult(RESULT_OK);
 	                									finish();
 
@@ -75,85 +85,86 @@ public class SettingsActivity extends PreferenceActivity {
 	                				final AlertDialog alertDialog = alert.create();
 	                				alertDialog.show();
 	                				
-	                		 }else if (preference.getKey().equals("pref_key_delete_account")) {
-	                			AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
-	                			alert.setTitle("Delete Account");
-	                			alert.setMessage("Do you want to permanently of this account?");
-	                			// Set an EditText view to get user input
-	                			final EditText input = new EditText(SettingsActivity.this);
-	                			alert.setView(input);
-	                			
-	                			alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-	                				public void onClick(DialogInterface dialog, int whichButton) {
-	                							// Check if user has logged in already
-	                							SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-	                							// First Delete the sharedPreference
-	                							if (sharedPreferences.contains("Username")) {
-	                								// Store the temp username
-	                								tempUsername = sharedPreferences.getString("Username", null);
-	                								
-	                								// Next delete the account from the server
-	                								new DeleteAccountAsync().execute(Database.PRODUCT_URI);
-	                								
-	                								// Next Delete the shared preference
-	                								SharedPreferences.Editor editor = sharedPreferences.edit();
-	                								editor.remove("Username");
-	                								editor.commit();
-	                								
-	                								
+	                    	 }
+							return true;
+	                     }
+	        });
+	        
+		deleteAccountPref
+				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
-	                								
-	                								
-	                								// Now Start the login page
-	                								Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
-	                								startActivity(intent);
-	                								setResult(RESULT_OK);
-	                								finish();
+					@Override
+					public boolean onPreferenceClick(Preference preference) {
+						if (preference.getKey().equals("pref_key_delete_account")) {
+							AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
+							alert.setTitle("Delete Account");
+							alert.setMessage("Do you want to permanently of this account?");
 
-	                							}else{
-	                								Toast.makeText(SettingsActivity.this, "No user found!", Toast.LENGTH_SHORT).show();
-	                							}
-	                					}
-	                			});
-	                			
-	                			alert.setNegativeButton("Cancel",
-	                					new DialogInterface.OnClickListener() {
-	                						public void onClick(DialogInterface dialog, int whichButton) {
-	                							setResult(RESULT_CANCELED);
-	                							finish();
-	                						}
-	                			});
-	                			
-	                			final AlertDialog alertDialog = alert.create();
-	                			alertDialog.show();
-	                			
-	                		}
-	                			
-	                		
-	                		
-	                		
-	                		
-	                		return true;
-	                		}
-	                 });
+							alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int whichButton) {
+									// Check if user has logged in already
+									SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+									// First Delete the sharedPreference
+									if (sharedPreferences.contains("Username")) {
+										// Store the temp username
+										tempUsername = sharedPreferences.getString("Username", null);
+										
+										// Next delete the account from the server
+										deleteAccount();
+										// Next Delete the shared preference
+										SharedPreferences.Editor editor = sharedPreferences.edit();
+										editor.remove("Username");
+										editor.commit();
+
+										Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+										LoginActivity.usernameText = null;
+    									startActivity(intent);
+										setResult(RESULT_OK);
+										finish();
+
+									} else {
+										Toast.makeText(SettingsActivity.this, "No user found!", Toast.LENGTH_SHORT).show();
+									}
+								}
+							});
+
+							alert.setNegativeButton("Cancel",
+									new DialogInterface.OnClickListener() {
+										public void onClick(DialogInterface dialog, int whichButton) {
+											setResult(RESULT_CANCELED);
+											finish();
+										}
+							});
+
+							final AlertDialog alertDialog = alert.create();
+							alertDialog.show();
+
+						}
+
+						return true;
+
+					}
+				});
 	        
 	    }
-	 /*
-	  * Used for AsyncTask to delete account
-	  */
-	 private class DeleteAccountAsync extends AsyncTask<String, Void, Void> {
-		 @Override
-	     protected Void doInBackground(String... url) {
-			 
+	 private void deleteAccount(){
+			final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
+			Thread t = new Thread() {
+				
+
+			public void run(){
 			HttpClient client = new DefaultHttpClient();
-			HttpGet request = new HttpGet(url[0]);
+			HttpGet get = new HttpGet(Database.PRODUCT_URI);
+
+			HttpPost delete = new HttpPost(Database.PRODUCT_URI);
+			
 			try {
-				HttpResponse response = client.execute(request);
+				HttpResponse response = client.execute(get);
 				HttpEntity entity = response.getEntity();
 				String data = EntityUtils.toString(entity);
 				Log.d(TAG, data);
 				JSONObject myjson;
-
+				
 				try {
 					myjson = new JSONObject(data);
 					JSONArray array = myjson.getJSONArray("data");
@@ -161,7 +172,14 @@ public class SettingsActivity extends PreferenceActivity {
 						JSONObject obj = array.getJSONObject(i);
 						if(obj.get("name").toString().equals(tempUsername)){
 							Log.d("SettingsActivity", "Removed " + tempUsername);
-							//array.remove(i);
+							List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+						    nameValuePairs.add(new BasicNameValuePair("id", obj.get("name").toString()));
+						    nameValuePairs.add(new BasicNameValuePair("action", "delete"));
+						    
+						    delete.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+							 
+						    client.execute(delete);
+							break;
 						}
 					}
 
@@ -178,13 +196,14 @@ public class SettingsActivity extends PreferenceActivity {
 
 				Log.d(TAG, "IOException while trying to connect to GAE");
 			}
-			return null;
+			dialog.dismiss();
+
 	     }
+			};
+			t.start();
+			dialog.show();
 
-	     protected void onPostExecute(List<String> list) {
 
-
-		}
 
 	 }
 

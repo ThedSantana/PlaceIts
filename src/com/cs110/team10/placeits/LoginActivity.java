@@ -38,7 +38,7 @@ public class LoginActivity extends Activity{
 	
 	private static final String TAG = "SignUpActivity";
 
-	private EditText usernameText;
+	static EditText usernameText;
 	private EditText passwordText;
 	
 	private SharedPreferences sharedPreferences;
@@ -161,7 +161,10 @@ public class LoginActivity extends Activity{
 		final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
 		Thread t = new Thread() {
 			
-		 public void run(){
+		 /* (non-Javadoc)
+		 * @see java.lang.Thread#run()
+		 */
+		public void run(){
 			 HttpClient client = new DefaultHttpClient();
 			 HttpGet request = new HttpGet(Database.PRODUCT_URI);
 				try {
@@ -187,7 +190,7 @@ public class LoginActivity extends Activity{
 					            editor.putString("Username", usernameText.getText().toString());
 					            editor.commit();
 								Intent intent = new Intent(LoginActivity.this, TestActivity.class);
-								startActivity(intent);
+								startActivityIfNeeded(intent, 10);
 								finish();
 								return;
 							}
