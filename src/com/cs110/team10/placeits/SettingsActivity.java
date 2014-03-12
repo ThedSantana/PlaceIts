@@ -113,7 +113,8 @@ public class SettingsActivity extends PreferenceActivity {
 										deleteAccount();
 										// Next Delete the shared preference
 										SharedPreferences.Editor editor = sharedPreferences.edit();
-										editor.remove("Username");
+										editor.clear();
+										//editor.remove("Username");
 										editor.commit();
 
 										Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);

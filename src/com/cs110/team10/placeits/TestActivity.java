@@ -3,6 +3,7 @@ package com.cs110.team10.placeits;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.location.Address;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -237,6 +239,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         
         Log.d("TestActivity", "Marker ID is " + ID);
         // Now add all the markers on the map
+        /*
         for(int i=0; i <= ID; i++){
         	String longitude = sharedPreferences.getString("markerLong_m" + i, "0");
         	String latitude =  sharedPreferences.getString("markerLat_m" + i, "0");
@@ -246,7 +249,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
             if(sharedPreferences.contains("markerAlarm_m" + i)){
             	Log.d("TestActivity", "SharedPreferences adding an alarm");
             	Marker mark = addAMarker(new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude)), 
-            		message, thisContext);
+            			message, thisContext);
             	database.addTime(mark, sharedPreferences.getString("markerAlarm_m" + i, "0"));
             	
 
@@ -261,12 +264,10 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 
                 
                 database.addMarker(mark, message);
-                
-               
-        		
+                  		
         	}
-        	
-        }
+        } */
+        
 		List<String> info;
 		try {
 			info = new UpdateTask().execute(Database.ITEM_URI).get();
@@ -278,6 +279,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 				Marker mark = googleMap.addMarker(new MarkerOptions().position(
 						new LatLng(lat, lon)).title(message));
 				// Drawing circle on the map
+				addPendingIntent(message, lat, lon);
 				circleMap.put(mark, drawCircle(new LatLng(lat, lon)));
 			}
 		} catch (InterruptedException e) {
@@ -364,11 +366,13 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 			private ProgressDialog dialog;
 			private Context context;
 			private String places;
+			private Marker marker;
 
-			public GetPlaces(Context context, String places) {
+			public GetPlaces(Context context, String places, Marker added) {
 				Log.d("TestActivity","PLACES PLZ " + places);
 				this.context = context;
 				this.places = places;
+				this.marker = added;
 			}
 
 			@Override
@@ -380,14 +384,30 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 					dialog.dismiss();
 				}
 				for (int i = 0; i < result.size(); i++) {
-					googleMap.addMarker(new MarkerOptions()
-							.title(result.get(i).getName())
+					Log.d(result.get(i).getName(), result.get(i).getVicinity());
+					String s = added.getTitle() + " - " + result.get(i).getName();
+					Marker m = googleMap.addMarker(new MarkerOptions()
+							.title(s)
 							.position(new LatLng(result.get(i).getLatitude(),
 									result.get(i).getLongitude()))
 							.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
 							.snippet(result.get(i).getVicinity()));
-							//.snippet(result.get(i).getFormattedAddress()));
-				}
+					// .snippet(result.get(i).getFormattedAddress()));
+					
+				// Draw notification radius
+					circleMap.put(m, drawCircle(new LatLng(result.get(i).getLatitude(), result.get(i).getLongitude())));
+
+					
+				// Add the pending intent
+				addPendingIntent(s, result.get(i).getLatitude(), result.get(i).getLongitude());
+				
+				// Sync with server
+				// addMarkerToServer
+				
+			}
+				
+				
+				
 				CameraPosition cameraPosition = new CameraPosition.Builder()
 						.target(new LatLng(result.get(0).getLatitude(), result
 								.get(0).getLongitude())) // Sets the center of the map to
@@ -469,8 +489,12 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         }
     }
  
+	
 	@Override
 	public void onMapClick(LatLng position) {
+		Toast.makeText(thisContext,
+				"Lat: " + String.valueOf(position.latitude) + " Long: " + String.valueOf(position.longitude),
+				Toast.LENGTH_SHORT).show();
 
 		// Check if action bar "add button" was enabled
 		if(!addMarker)
@@ -539,7 +563,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		
 
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
-		alert.setMessage(database.getMarkerList().get(marker));
+		alert.setMessage(marker.getTitle());
         final SharedPreferences.Editor editor = sharedPreferences.edit();
 		// Set an EditText view to get user input
 		alert.setPositiveButton("Complete task", new DialogInterface.OnClickListener() {
@@ -691,12 +715,16 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	                markerLoc = new Location(loc);
 	                markerLoc.setLatitude(tempPos.latitude);
 	                markerLoc.setLongitude(tempPos.longitude);
-	                new GetPlaces(TestActivity.this,value1).execute();
-	                new GetPlaces(TestActivity.this,value2).execute();
-	                new GetPlaces(TestActivity.this,value3).execute();
+	                new GetPlaces(TestActivity.this,value1, added).execute();
+	                new GetPlaces(TestActivity.this,value2, added).execute();
+	                new GetPlaces(TestActivity.this,value3, added).execute();
+
+	               
                 }else{
-                	Log.d("location","not turned on");
-                	Toast.makeText(TestActivity.this, "Location not found. Is your GPS on?", Toast.LENGTH_SHORT).show();
+                	Log.d("TestActivity-onActivityResult","GPS not turned on");
+                	Toast.makeText(TestActivity.this, 
+                			"Category Place It could not be added. Please turn on your GPS.", 
+                			Toast.LENGTH_SHORT).show();
                 }
                 
                 // Location manager checks this pendingIntent when user enters region. Goes to GeoAlert class if entered. 
@@ -796,15 +824,38 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		     
 	}
 	    
-	    public void cancelAlarm(Context context) {
-	        // If the alarm has been set, cancel it.
-	        if (alarm != null) {
-	            alarm.cancel(alarmIntent);
-	        }else{
-	        	Toast.makeText(TestActivity.this, "Alarm has not been set!", Toast.LENGTH_SHORT).show();
-	        }
-	    }
+	public void cancelAlarm(Context context) {
+		// If the alarm has been set, cancel it.
+		if (alarm != null) {
+			alarm.cancel(alarmIntent);
+		} else {
+			Toast.makeText(TestActivity.this, "Alarm has not been set!",
+					Toast.LENGTH_SHORT).show();
+		}
+	}
 
+	/*
+	 * Add pendingIntent helper use in adding blue markers in GetPlaces()
+	 */
+	public void addPendingIntent(String message, double latitude,
+			double longitude) {
+		Intent enteredRegionIntent = new Intent(thisContext, GeoAlert.class);
+
+		// Adding message for the notification system
+		enteredRegionIntent.putExtra("message", message);
+		enteredRegionIntent.putExtra("latitude", latitude);
+		enteredRegionIntent.putExtra("longitude", longitude);
+
+		// Location manager checks this pendingIntent when user enters
+		// region. Goes to GeoAlert class if entered.
+		pendingIntent = PendingIntent.getBroadcast(thisContext, 0,
+				enteredRegionIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+
+		// Adding a proximity alert on the marker based on radiusSize.
+		// Expiration is -1, so it will never expire.
+		locationManager.addProximityAlert(latitude, longitude,
+				(long) radiusSize, -1, pendingIntent);
+	}
 	 
 	 public static Marker addAMarker(LatLng position, String message, Context context){
 
@@ -874,7 +925,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 			 
 		 }
 		 if(database.markers.isEmpty()){
-			 Log.d("TestActivity", "fuuuck");
+			 Log.d("TestActivity", "addingmarker from deleteMarker()");
 			 addAMarker(position, message,  TestActivity.thisContext);
 			 
 		 }
@@ -1151,6 +1202,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		dialog.show();
 	}
     
+
     
     /*
      * Deletes marker data from server

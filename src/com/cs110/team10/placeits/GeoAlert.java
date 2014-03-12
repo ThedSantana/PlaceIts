@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
@@ -23,6 +24,10 @@ public class GeoAlert extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	    	
+	    	// Vibrate
+        	Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        	vibrator.vibrate(50);
+        	
 	    	Intent completeIntent = new Intent(context, NotificationHandler.class);
 	    	completeIntent.putExtra("completed", true);
 	    	completeIntent.putExtra("latitude", intent.getDoubleExtra("latitude", 0));
