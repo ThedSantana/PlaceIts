@@ -8,6 +8,9 @@
 package com.cs110.team10.placeits;
 
 public final class R {
+    public static final class array {
+        public static final int places=0x7f0a0000;
+    }
     public static final class attr {
         /** 
     The size of the ad. It must be one of BANNER, FULL_BANNER, LEADERBOARD,
@@ -241,13 +244,14 @@ containing a value of this type.
         public static final int ic_plusone_small_off_client=0x7f020028;
         public static final int ic_plusone_standard_off_client=0x7f020029;
         public static final int ic_plusone_tall_off_client=0x7f02002a;
+        public static final int pin=0x7f02002b;
     }
     public static final class id {
         public static final int aboutText=0x7f060005;
-        public static final int action_about=0x7f06001f;
-        public static final int action_add_note=0x7f06001d;
-        public static final int action_search=0x7f06001e;
-        public static final int action_settings=0x7f06001c;
+        public static final int action_about=0x7f060024;
+        public static final int action_add_note=0x7f060022;
+        public static final int action_search=0x7f060023;
+        public static final int action_settings=0x7f060021;
         public static final int activemarker=0x7f06000a;
         public static final int activitylist=0x7f060008;
         public static final int barHorz=0x7f060018;
@@ -255,25 +259,30 @@ containing a value of this type.
         public static final int barVert=0x7f06001a;
         public static final int btn_create_account=0x7f060013;
         public static final int btn_login=0x7f06000e;
-        public static final int chooseDaysCancel=0x7f060019;
-        public static final int chooseDaysConfirm=0x7f06001b;
-        public static final int continuous_track=0x7f060020;
+        public static final int chooseCatCancel=0x7f060019;
+        public static final int chooseCategory=0x7f06001b;
+        public static final int chooseDaysCancel=0x7f06001f;
+        public static final int chooseDaysConfirm=0x7f060020;
+        public static final int continuous_track=0x7f060025;
         public static final int createAccount=0x7f06000f;
         public static final int hybrid=0x7f060004;
         public static final int list=0x7f060009;
-        public static final int map=0x7f060014;
+        public static final int map=0x7f06001c;
         public static final int none=0x7f060000;
         public static final int normal=0x7f060001;
         public static final int okay=0x7f060007;
-        public static final int one_min=0x7f060016;
+        public static final int one_min=0x7f06001d;
         public static final int password_edit=0x7f06000d;
-        public static final int radio_group=0x7f060015;
+        public static final int radio_group=0x7f060014;
         public static final int satellite=0x7f060002;
         public static final int signUpTextView=0x7f060010;
+        public static final int spinner_textos=0x7f060015;
+        public static final int spinner_textos_carpetas=0x7f060016;
+        public static final int spinner_titulo_carpetas=0x7f060017;
         public static final int terrain=0x7f060003;
         public static final int title=0x7f06000b;
         public static final int username_edit=0x7f06000c;
-        public static final int weekly=0x7f060017;
+        public static final int weekly=0x7f06001e;
         public static final int yourPassword=0x7f060012;
         public static final int yourUsername=0x7f060011;
     }
@@ -286,14 +295,15 @@ containing a value of this type.
         public static final int activemarkers=0x7f030002;
         public static final int login_layout=0x7f030003;
         public static final int signup_layout=0x7f030004;
-        public static final int test=0x7f030005;
-        public static final int time_chooser=0x7f030006;
+        public static final int spinner_layout=0x7f030005;
+        public static final int test=0x7f030006;
+        public static final int time_chooser=0x7f030007;
     }
     public static final class menu {
-        public static final int day_chooser=0x7f0b0000;
-        public static final int main=0x7f0b0001;
-        public static final int test=0x7f0b0002;
-        public static final int test_actionbar=0x7f0b0003;
+        public static final int day_chooser=0x7f0c0000;
+        public static final int main=0x7f0c0001;
+        public static final int test=0x7f0c0002;
+        public static final int test_actionbar=0x7f0c0003;
     }
     public static final class string {
         public static final int Friday=0x7f07002d;
@@ -458,14 +468,14 @@ containing a value of this type.
     
  API 14 theme customizations can go here. 
          */
-        public static final int AppBaseTheme=0x7f0a0000;
+        public static final int AppBaseTheme=0x7f0b0000;
         /**  Application theme. 
  All customizations that are NOT specific to a particular API-level can go here. 
          */
-        public static final int AppTheme=0x7f0a0001;
+        public static final int AppTheme=0x7f0b0001;
         /**   ProgressDialog Style 
          */
-        public static final int ProgressDialog=0x7f0a0002;
+        public static final int ProgressDialog=0x7f0b0002;
     }
     public static final class xml {
         public static final int settings_layout=0x7f040000;

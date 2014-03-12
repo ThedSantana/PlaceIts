@@ -79,6 +79,14 @@
    		     >
         </activity>
         
+          <activity
+            android:name="com.cs110.team10.placeits.CategoryChooser"
+            android:label="@string/title_activity_day_chooser"
+            android:theme="@android:style/Theme.Holo.Light.Dialog"
+            android:configChanges="orientation"
+   		    android:screenOrientation="portrait" >
+        </activity>
+        
         <activity
             android:name="com.cs110.team10.placeits.activeList"
             android:configChanges="orientation"

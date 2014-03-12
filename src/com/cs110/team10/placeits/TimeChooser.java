@@ -6,6 +6,7 @@ package com.cs110.team10.placeits;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +19,9 @@ import android.widget.Toast;
 
 public class TimeChooser extends Activity {
 	private HashMap<String, Boolean> timePicked;
-	
+	private String value1; 
+	private String value2; 
+	private String value3; 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -63,7 +66,7 @@ public class TimeChooser extends Activity {
 			public void onClick(View v) {
 				Log.d("ConfirmationActivity", "Confirm Picked");
 				Log.d("TimeChooser", String.valueOf(timePicked.get("minute")));
-		    	Toast.makeText(TimeChooser.this, "Notes added!", Toast.LENGTH_SHORT).show();
+
 		    	if(timePicked.get("minute")){
 			    	TestActivity.storeTime("minute");
 		    	}else if(timePicked.get("weekly")){
@@ -72,8 +75,10 @@ public class TimeChooser extends Activity {
 		    		TestActivity.storeTime(null);
 		    	}
 		    	setResult(RESULT_OK);
-	            finish();
-				
+		    	
+		    	Intent i = new Intent(TimeChooser.this, CategoryChooser.class);
+		    	startActivityForResult(i, 2);
+		    	Intent data = new Intent();
 			}
 		});
 		
@@ -88,8 +93,38 @@ public class TimeChooser extends Activity {
 			}
 		});
 		
+		
 	}
 	
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("TimeChooser","Request is " + requestCode);
+      
+		  if (requestCode == 2) {
+
+		     if(resultCode == RESULT_OK){      
+		     	Toast.makeText(TimeChooser.this, "Notes added!", Toast.LENGTH_SHORT).show();  
+		         value1=data.getStringExtra("result1");  
+		         value2=data.getStringExtra("result2");  
+		         value3=data.getStringExtra("result3");  
+			        Log.d("TimeChooser","TimeChooser is " + value1);
+			    	if (getParent() == null) {
+				    	data.putExtra("result1",value1);
+				    	data.putExtra("result2",value2);
+				    	data.putExtra("result3",value3);
+			    	    setResult(Activity.RESULT_OK, data);
+			    	} else {
+			    	    getParent().setResult(Activity.RESULT_OK, data);
+			    	}
+		     }
+		     if (resultCode == RESULT_CANCELED) {    
+		         //Write your code if there's no result
+				 setResult(RESULT_CANCELED);
+		     }
+		  }
+		  
+          finish();
+		}//onActivityResult
+		
 
 
 }

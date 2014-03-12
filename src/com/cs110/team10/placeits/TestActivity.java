@@ -18,7 +18,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -67,6 +66,7 @@ import com.google.android.gms.maps.GoogleMap.CancelableCallback;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -100,6 +100,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private int ID = 0;           // Used to give each marker an ID for storing them in data
 	
 	private static HashMap<Marker, Circle> circleMap;
+	private HashMap<Marker, String> timeMode;
 	private static String tempTime;    // Temporary time used for onActivityResult()
 	private AlarmManager alarm;
 	private PendingIntent alarmIntent; 
@@ -120,6 +121,15 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	private static final int FASTEST_INTERVAL_IN_SECONDS = 1;
 	// A fast frequency ceiling in milliseconds
 	private static final long FASTEST_INTERVAL = MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
+	
+	//TODO: Here are the variables I'm adding for Places
+		private String[] places;	
+		private Location markerLoc;
+		
+		
+		private Location loc;	
+		
+		//End new variables
 
 	private int settings_requestcode = 5;
 	
@@ -139,6 +149,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		
 		googleMap = null;
 		
+		// TODO:check added code
+		initCompo();
+		places = getResources().getStringArray(R.array.places);
+		currentLocation();
+				
 		thisContext = getApplicationContext();
 		alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		
@@ -170,6 +185,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 		String provider = locationManager.getBestProvider(criteria, true);
 		Location myLocation = locationManager.getLastKnownLocation(provider);
 		if (myLocation != null) {
+			Log.d("Test Activity", "Location is not null");
 			// Get latitude of the current location
 			double myLatitude = myLocation.getLatitude();
 			// Get longitude of the current location
@@ -277,10 +293,10 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	    
 		// Checks if device has been rebooted and needs to start alarm again
 		if(getIntent().getBooleanExtra("minute", false)){
-			Toast.makeText(TestActivity.this, "FUCKING MINUTE", Toast.LENGTH_SHORT).show();
+			Toast.makeText(TestActivity.this, " MINUTE", Toast.LENGTH_SHORT).show();
 			//setMinuteAlarm(TestActivity.this, marker, s, ID)
 		}else if(getIntent().getBooleanExtra("weekly", false)){
-			Toast.makeText(TestActivity.this, "FUCKING Week", Toast.LENGTH_SHORT).show();
+			Toast.makeText(TestActivity.this, " Week", Toast.LENGTH_SHORT).show();
 			//setWeeklyAlarm(TestActivity.this, marker, s, ID)
 		}
 		
@@ -288,6 +304,126 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	    googleMap.setOnMapClickListener(this);
 	    googleMap.setOnMarkerClickListener((OnMarkerClickListener) this);
 	}
+	
+	//TODO: Check if below code works
+		private void initCompo() {
+			googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+		}
+				
+
+		private void currentLocation() {
+			locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			Log.d("TestActivity","Enters here5");	
+			String provider = locationManager
+					.getBestProvider(new Criteria(), false);
+
+			Location location = locationManager.getLastKnownLocation(provider);
+	        
+			if (location == null) {
+				Log.d("TestActivity","Enters here4");	
+				
+				locationManager.requestLocationUpdates(provider, 0, 0, listener);
+			} else {
+				Log.d("TestActivity","Enters here2");	
+				loc = location;
+				markerLoc =loc;
+				//new GetPlaces(TestActivity.this, places[0].toLowerCase().replace(
+					//	"-", "_")).execute();
+				Log.e(TAG, "location : " + location);
+			}
+
+		}	
+
+		
+		private LocationListener listener = new LocationListener() {
+
+			@Override
+			public void onStatusChanged(String provider, int status, Bundle extras) {
+
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+
+			}
+
+			@Override
+			public void onLocationChanged(Location location) {
+				Log.e(TAG, "location update : " + location);
+				loc = location;
+				locationManager.removeUpdates(listener);
+			}
+		};	
+		
+		private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Place>> {
+			private ProgressDialog dialog;
+			private Context context;
+			private String places;
+
+			public GetPlaces(Context context, String places) {
+				Log.d("TestActivity","PLACES PLZ " + places);
+				this.context = context;
+				this.places = places;
+			}
+
+			@Override
+			protected void onPostExecute(ArrayList<Place> result) {
+				if(result.size()==0)
+					return;
+				super.onPostExecute(result);
+				if (dialog.isShowing()) {
+					dialog.dismiss();
+				}
+				for (int i = 0; i < result.size(); i++) {
+					googleMap.addMarker(new MarkerOptions()
+							.title(result.get(i).getName())
+							.position(new LatLng(result.get(i).getLatitude(),
+									result.get(i).getLongitude()))
+							.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+							.snippet(result.get(i).getVicinity()));
+							//.snippet(result.get(i).getFormattedAddress()));
+				}
+				CameraPosition cameraPosition = new CameraPosition.Builder()
+						.target(new LatLng(result.get(0).getLatitude(), result
+								.get(0).getLongitude())) // Sets the center of the map to
+												// Mountain View
+						.zoom(14) // Sets the zoom
+						.tilt(30) // Sets the tilt of the camera to 30 degrees
+						.build(); // Creates a CameraPosition from the builder
+				googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+			}
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+				dialog = new ProgressDialog(context);
+
+			}
+
+			@Override
+			protected ArrayList<Place> doInBackground(Void... arg0) {
+				PlacesService service = new PlacesService("AIzaSyCJ5Lqx_DqMPmNiGn35lil0AsV81vkAzkA");
+				ArrayList<Place> findPlaces = service.findPlaces(markerLoc.getLatitude(), // 28.632808
+						markerLoc.getLongitude(), places); // 77.218276
+				Log.d("TestActivity", "Logging this Shit");
+	            if(findPlaces != null){
+					for (int i = 0; i < findPlaces.size(); i++) {
+		
+						Place placeDetail = findPlaces.get(i);
+						Log.e(TAG, "places : " + placeDetail.getName());
+					}
+					Log.d("TestActivity", "SIZE =" +Integer.toString(findPlaces.size()));
+	            }	
+				return findPlaces;
+			}
+
+		}		
+			
+	    //End of added code for Google places API	
 	
 	
     /**
@@ -531,6 +667,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
         		circleMap.put(added, drawCircle(tempPos));            // For debug purposes
 				database.addMarker(added, tempValue);           // Adds marker to database
 				
+				String value1=data.getStringExtra("result1");
+		        String value2=data.getStringExtra("result2");
+		        String value3=data.getStringExtra("result3");
+		        Log.d("TestActivity","VALUE1 is " + value1);
+		        
 				// Storing data to server
 				tempMarkerLat = added.getPosition().latitude;
 				tempMarkerLong = added.getPosition().longitude;
@@ -545,7 +686,19 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
                 enteredRegionIntent.putExtra("message", tempValue);
                 enteredRegionIntent.putExtra("latitude", tempPos.latitude);
                 enteredRegionIntent.putExtra("longitude", tempPos.longitude);
-
+                
+                if(markerLoc != null && loc != null){
+	                markerLoc = new Location(loc);
+	                markerLoc.setLatitude(tempPos.latitude);
+	                markerLoc.setLongitude(tempPos.longitude);
+	                new GetPlaces(TestActivity.this,value1).execute();
+	                new GetPlaces(TestActivity.this,value2).execute();
+	                new GetPlaces(TestActivity.this,value3).execute();
+                }else{
+                	Log.d("location","not turned on");
+                	Toast.makeText(TestActivity.this, "Location not found. Is your GPS on?", Toast.LENGTH_SHORT).show();
+                }
+                
                 // Location manager checks this pendingIntent when user enters region. Goes to GeoAlert class if entered. 
                 pendingIntent = PendingIntent.getBroadcast(TestActivity.this, 0, enteredRegionIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
 

@@ -63,7 +63,7 @@ public class SettingsActivity extends PreferenceActivity {
 	                									editor.remove("Username");
 	                									editor.commit();
 	                									Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
-	            										LoginActivity.usernameText = null;
+	            										//LoginActivity.usernameText = null;
 	                									startActivity(intent);
 	                									setResult(RESULT_OK);
 	                									finish();
@@ -117,7 +117,7 @@ public class SettingsActivity extends PreferenceActivity {
 										editor.commit();
 
 										Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
-										LoginActivity.usernameText = null;
+										// LoginActivity.usernameText = null; // Changed usernameText in loginactivity to private, test this out
     									startActivity(intent);
 										setResult(RESULT_OK);
 										finish();

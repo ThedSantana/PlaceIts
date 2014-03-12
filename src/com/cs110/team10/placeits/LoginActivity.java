@@ -38,7 +38,7 @@ public class LoginActivity extends Activity{
 	
 	private static final String TAG = "SignUpActivity";
 
-	static EditText usernameText;
+	private EditText usernameText;
 	private EditText passwordText;
 	
 	private SharedPreferences sharedPreferences;
