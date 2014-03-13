@@ -149,7 +149,8 @@ public class activeList extends Activity{
 						JSONArray array = myjson.getJSONArray("data");
 						for (int i = 0; i < array.length(); i++) {
 							JSONObject obj = array.getJSONObject(i);
-							if(preferences.getString("Username", null).equals(obj.get("product").toString())){
+							if(preferences.getString("Username", null).equals(obj.get("product").toString()) && 
+									obj.get("iscategory").toString().equals("false")){
 								list.add(obj.get("name").toString());
 								lati.add(Double.parseDouble(obj.get("lat").toString()));
 								longi.add(Double.parseDouble(obj.get("long").toString()));

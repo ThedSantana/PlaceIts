@@ -84,6 +84,12 @@ public class CategoryChooser extends Activity {
 			    	 returnIntent.putExtra("result1",value1);
 			    	 returnIntent.putExtra("result2",value2);
 			    	 returnIntent.putExtra("result3",value3);
+			    	 if( !(value1.equals("none") || value2.equals("none") || value3.equals("none"))){
+						returnIntent.putExtra("categoryhead", true);
+			    	 }else{
+			    		returnIntent.putExtra("categoryhead", false);
+
+			    	 }
 			    	 setResult(RESULT_OK,returnIntent);     
 			    	 finish();
 			    	
