@@ -226,7 +226,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 
         // Getting stored zoom level if exists else return 0
         String storedZoom = sharedPreferences.getString("myZoom", "0");
-
+        /*
         // If coordinates are stored earlier
         if(!storedLat.equals("0")){
         	// Moving CameraPosition to previously clicked position
@@ -235,7 +235,7 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
             // Setting the zoom level in the map
             googleMap.animateCamera(CameraUpdateFactory.zoomTo(Float.parseFloat(storedZoom)));
         }
-        
+        */
         // Getting ID count
         if(! sharedPreferences.getString("ID", "noID").equals("noID")){
         	try{
@@ -429,7 +429,10 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 				tempIsCategory = "true";
 				// Sync with server
 				// addMarkerToServer
-				new AddAMarkerToServer().execute();
+				Log.d("GetPLACES", "ADDING MARKER NOW");
+				addServerMarker();
+				Log.d("GetPLACES", "ADDING MARKER DONE");
+
 			}
 				
 				
@@ -518,11 +521,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	
 	@Override
 	public void onMapClick(LatLng position) {
-		/*
+		
 		Toast.makeText(thisContext,
 				"Lat: " + String.valueOf(position.latitude) + " Long: " + String.valueOf(position.longitude),
 				Toast.LENGTH_SHORT).show();
-			*/
+			
 
 		// Check if action bar "add button" was enabled
 		if(!addMarker)
@@ -1207,7 +1210,6 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
     	
     	protected void onPreExecute() {
-    		Log.d("new category", "hagen dax");
 			dialog = new ProgressDialog(TestActivity.this);
 			dialog.setMessage("Posting data, please wait...");
 			dialog.show();
@@ -1248,13 +1250,56 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
     	
 		@Override
 		protected void onPostExecute(Void v) {
-			Log.d("onPostExecture","fuck");
 			dialog.dismiss();
 
 		}	
 
 	} // End of AddAMarker class
-    
+    /*
+     * Add a marker to server
+     */
+    private void addServerMarker(){
+    	final ProgressDialog dialog = ProgressDialog.show(this, "Posting Data...", "Please wait...", false);
+    	final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+    	
+	    Log.d("addMarkerServer", preferences.getString("Username", null));
+	    
+		Thread t = new Thread() {
+			
+			public void run() {
+				HttpClient client = new DefaultHttpClient();
+				HttpPost post = new HttpPost(Database.ITEM_URI);
+ 
+			    try {
+
+
+			      List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(7);
+			      nameValuePairs.add(new BasicNameValuePair("name", tempMarkerDescription));
+			      nameValuePairs.add(new BasicNameValuePair("product", preferences.getString("Username", null)));
+			      nameValuePairs.add(new BasicNameValuePair("long", String.valueOf(tempMarkerLong)));
+			      nameValuePairs.add(new BasicNameValuePair("lat", String.valueOf(tempMarkerLat)));
+			      nameValuePairs.add(new BasicNameValuePair("categoryhead", tempCategoryHead));
+			      nameValuePairs.add(new BasicNameValuePair("iscategory", tempIsCategory));
+			      nameValuePairs.add(new BasicNameValuePair("action",  "put"));
+			      post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+			      HttpResponse response = client.execute(post);
+			      BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			      String line = "";
+			      while ((line = rd.readLine()) != null) {
+			        Log.d(TAG, line);
+			      }
+
+			    } catch (IOException e) {
+			    	Log.d(TAG, "IOException while trying to conect to GAE");
+			    }
+				dialog.dismiss();
+			}
+		};
+
+		t.start();
+		dialog.show();
+	}
 
     
     /*

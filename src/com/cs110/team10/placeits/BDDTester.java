@@ -1,15 +1,3 @@
-/*
- * This is an example test project created in Eclipse to test NotePad which is a sample 
- * project located in AndroidSDK/samples/android-11/NotePad
- * 
- * 
- * You can run these test cases either on the emulator or on device. Right click
- * the test project and select Run As --> Run As Android JUnit Test
- * 
- * @author Renas Reda, renas.reda@robotium.com
- * 
- */
-
 package com.cs110.team10.placeits;
 
 import com.robotium.solo.Solo;
@@ -19,11 +7,11 @@ import android.test.ActivityInstrumentationTestCase2;
 
 
 
-public class BDDTester extends ActivityInstrumentationTestCase2<TestActivity>{
+public class BDDTester extends ActivityInstrumentationTestCase2<LoginActivity>{
 
 	private Solo solo;
 	public BDDTester() {
-		super(TestActivity.class);
+		super(LoginActivity.class);
 
 	}
 
@@ -42,8 +30,16 @@ public class BDDTester extends ActivityInstrumentationTestCase2<TestActivity>{
 	}
 
 	public void testAllBDD() throws Exception {
-		//Given Add Note and the user clicks on the note
 		
+		//Given the user wants to login
+		solo.enterText(0, "team10"); 
+		//and they have a password 
+		//solo.clickOnText("Password");
+		solo.enterText(1, "team10"); 
+		//or click on the textfield id fill in information and login 
+		solo.clickOnButton("Log In");
+		
+		//Given Add Note and the user clicks on the note
 		solo.clickOnActionBarItem(R.id.action_add_note);
 		//And Map is clicked 
 		solo.clickOnText("Tap on a spot to add a note");
@@ -90,6 +86,9 @@ public class BDDTester extends ActivityInstrumentationTestCase2<TestActivity>{
 		//then 
 		solo.clickOnButton("Confirm");
 		solo.takeScreenshot();
+		//dont tag a category
+		solo.pressSpinnerItem(1, 1);
+		solo.clickOnButton("Confirm");
 		solo.clickOnText("Notes added!");
 		//when they enter text and click complete task
 		solo.clickOnButton("Complete task");
@@ -108,7 +107,8 @@ public class BDDTester extends ActivityInstrumentationTestCase2<TestActivity>{
 		solo.clickOnRadioButton(0);
 		solo.clickOnButton("Confirm");
 		//solo.takeScreenshot();
-		
+		solo.pressSpinnerItem(1, 1);
+		solo.clickOnButton("Confirm");
 		solo.drag(400, 400, 400, 400, 3);
  		//solo.drag(450, 400, 450, 400, 3);
 		
@@ -132,6 +132,8 @@ public class BDDTester extends ActivityInstrumentationTestCase2<TestActivity>{
 		solo.clickOnRadioButton(1);
 		solo.clickOnButton("Confirm");
 		solo.takeScreenshot();
+		solo.pressSpinnerItem(2, 5);
+		solo.clickOnButton("Confirm");
 		solo.drag(400, 400, 400, 400, 3);
 		
 		solo.clickOnActionBarItem(R.id.action_add_note);
