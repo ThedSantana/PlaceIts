@@ -521,10 +521,11 @@ public class TestActivity extends Activity implements OnMapClickListener, OnMark
 	
 	@Override
 	public void onMapClick(LatLng position) {
-		
+		/*
 		Toast.makeText(thisContext,
 				"Lat: " + String.valueOf(position.latitude) + " Long: " + String.valueOf(position.longitude),
 				Toast.LENGTH_SHORT).show();
+				*/
 			
 
 		// Check if action bar "add button" was enabled

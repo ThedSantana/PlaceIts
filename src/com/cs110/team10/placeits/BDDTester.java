@@ -39,6 +39,8 @@ public class BDDTester extends ActivityInstrumentationTestCase2<LoginActivity>{
 		//or click on the textfield id fill in information and login 
 		solo.clickOnButton("Log In");
 		
+		solo.sleep(2000);
+		
 		//Given Add Note and the user clicks on the note
 		solo.clickOnActionBarItem(R.id.action_add_note);
 		//And Map is clicked 
@@ -136,11 +138,6 @@ public class BDDTester extends ActivityInstrumentationTestCase2<LoginActivity>{
 		solo.clickOnButton("Confirm");
 		solo.drag(400, 400, 400, 400, 3);
 		
-		solo.clickOnActionBarItem(R.id.action_add_note);
-		solo.clickOnText("Tap on a spot to add a note");
-		//when they enter text and click snooze
-		solo.clickOnButton("Snooze");
-		solo.takeScreenshot();
 		
 		
 		//Given that click on active items 
